@@ -228,46 +228,74 @@ function startScanner() {
 
 function claimEmployee(employeeId) {
 
-  const url =
+  const callbackName =
+    "lunchCallback_" +
+    Date.now();
+
+  window[callbackName] =
+    function(response) {
+
+      try {
+
+        handleResult(response);
+
+      } finally {
+
+        delete window[callbackName];
+
+        const script =
+          document.getElementById(
+            callbackName
+          );
+
+        if (script) {
+          script.remove();
+        }
+
+      }
+
+    };
+
+
+  const script =
+    document.createElement("script");
+
+
+  script.id =
+    callbackName;
+
+
+  script.src =
     API_URL +
-    "?action=claim&employeeId=" +
-    encodeURIComponent(employeeId);
+    "?action=claim" +
+    "&employeeId=" +
+    encodeURIComponent(
+      employeeId
+    ) +
+    "&callback=" +
+    encodeURIComponent(
+      callbackName
+    );
 
 
-  fetch(url, {
+  script.onerror =
+    function() {
 
-    method: "GET",
+      delete window[callbackName];
 
-    redirect: "follow"
+      script.remove();
 
-  })
+      handleError({
+        message:
+          "Unable to contact the lunch system."
+      });
 
-  .then(function(response) {
+    };
 
-    if (!response.ok) {
 
-      throw new Error(
-        "Server returned HTTP " +
-        response.status
-      );
-
-    }
-
-    return response.json();
-
-  })
-
-  .then(function(data) {
-
-    handleResult(data);
-
-  })
-
-  .catch(function(error) {
-
-    handleError(error);
-
-  });
+  document.body.appendChild(
+    script
+  );
 
 }
 
