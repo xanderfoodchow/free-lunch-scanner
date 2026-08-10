@@ -144,45 +144,84 @@ function startScanner() {
     // QR DETECTED
     // =================================
 
-    function(decodedText) {
+ function(decodedText) {
 
-      if (processing) {
-        return;
-      }
+  if (processing) {
+    return;
+  }
+
+  // =====================================
+  // EXTRACT EMPLOYEE ID FROM QR
+  // =====================================
+
+  let employeeId = '';
+
+  try {
+
+    const scannedUrl =
+      new URL(decodedText);
+
+    // QR format:
+    // https://.../exec?claim=FC-00011
+
+    employeeId =
+      String(
+        scannedUrl.searchParams.get('claim') || ''
+      ).trim();
+
+  } catch (error) {
+
+    // Support QR containing plain ID
+    // Example: FC-00011
+
+    employeeId =
+      String(decodedText).trim();
+
+  }
 
 
-      const employeeId =
-        String(decodedText).trim();
+  // =====================================
+  // INVALID QR
+  // =====================================
+
+  if (!employeeId) {
+
+    showResult(
+      "❌ Invalid Employee QR Code",
+      "error"
+    );
+
+    return;
+
+  }
 
 
-      if (!employeeId) {
-        return;
-      }
+  processing = true;
 
 
-      processing = true;
+  // =====================================
+  // SHOW CHECKING
+  // =====================================
+
+  showResult(
+
+    "⏳ Checking employee...<br><br>" +
+    "<b>" +
+    employeeId +
+    "</b>",
+
+    "info"
+
+  );
 
 
-      showResult(
+  // =====================================
+  // SEND ONLY EMPLOYEE ID
+  // =====================================
 
-        "⏳ Checking employee...<br><br>" +
-        "<b>" +
-        employeeId +
-        "</b>",
+  claimEmployee(employeeId);
 
-        "info"
-
-      );
-
-
-      // =================================
-      // IMPORTANT
-      // CAMERA IS NOT STOPPED
-      // =================================
-
-      claimEmployee(employeeId);
-
-    },
+},
 
 
     // Normal scanning errors
