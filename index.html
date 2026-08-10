@@ -1,16 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base target="_top">
-
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Free Lunch Scanner</title>
-
-  <script src="https://unpkg.com/html5-qrcode"
-          type="text/javascript"></script>
-
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -18,12 +12,9 @@
       margin: 0;
       padding: 15px;
       background: #f5f5f5;
+      color: #222;
     }
-
-    h1 {
-      margin-bottom: 5px;
-    }
-
+    h1 { margin-bottom: 5px; }
     #reader {
       width: 100%;
       max-width: 450px;
@@ -33,7 +24,6 @@
       border-radius: 12px;
       box-sizing: border-box;
     }
-
     #result {
       max-width: 450px;
       margin: 20px auto;
@@ -42,407 +32,186 @@
       background: white;
       font-size: 20px;
       box-sizing: border-box;
+      min-height: 80px;
     }
-
-    .success {
-      background: #d4edda !important;
-      color: #155724;
-    }
-
-    .error {
-      background: #f8d7da !important;
-      color: #721c24;
-    }
-
-    .info {
-      background: #fff3cd !important;
-      color: #856404;
-    }
-
-    .name {
-      font-size: 26px;
-      font-weight: bold;
-      margin: 10px 0;
-    }
-
-    .status {
-      font-size: 24px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    button {
-      width: 100%;
-      max-width: 450px;
-      padding: 15px;
-      font-size: 18px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-    }
+    .success { background: #d4edda !important; color: #155724; }
+    .error { background: #f8d7da !important; color: #721c24; }
+    .info { background: #fff3cd !important; color: #856404; }
+    .name { font-size: 26px; font-weight: bold; margin: 10px 0; }
+    .status { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+    .count { max-width: 450px; margin: 10px auto; font-size: 14px; color: #666; }
   </style>
 </head>
-
 <body>
-
   <h1>🍱 Free Lunch Scanner</h1>
-
   <p>Scan Employee QR Code</p>
-
   <div id="reader"></div>
+  <div id="result" class="info">📷 Starting camera...</div>
+  <div id="scanCount" class="count">Successful claims this session: 0</div>
 
-  <div id="result" class="info">
-    Camera is starting...
-  </div>
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbw056MlHvMWgKzfm8KWXbhwHGA-qz1MHWsjP1M4wekvHTL64Qfg1PioHsQ601BeBCsr/exec";
 
-  <script>
+let scanner = null;
+let processing = false;
+let scanCount = 0;
+let callbackCounter = 0;
 
-    let scanner = null;
-    let processing = false;
+function showResult(message, type) {
+  const result = document.getElementById("result");
+  result.className = type;
+  result.innerHTML = message;
+}
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
-    // =====================================
-    // SHOW RESULT
-    // =====================================
+function claimEmployee(employeeId) {
+  const callbackName = "claimCallback_" + Date.now() + "_" + (++callbackCounter);
 
-    function showResult(message, type) {
-
-      const result =
-        document.getElementById("result");
-
-      result.className = type;
-
-      result.innerHTML = message;
-
+  window[callbackName] = function(response) {
+    try {
+      handleResult(response);
+    } finally {
+      delete window[callbackName];
+      const script = document.getElementById(callbackName);
+      if (script) script.remove();
     }
+  };
 
+  const script = document.createElement("script");
+  script.id = callbackName;
+  script.src =
+    API_URL +
+    "?action=claim" +
+    "&employeeId=" + encodeURIComponent(employeeId) +
+    "&callback=" + encodeURIComponent(callbackName);
 
-    // =====================================
-    // START SCANNER
-    // =====================================
+  script.onerror = function() {
+    delete window[callbackName];
+    script.remove();
+    handleError({message: "Unable to contact the lunch system."});
+  };
 
-    function startScanner() {
+  document.body.appendChild(script);
+}
 
-      scanner =
-        new Html5Qrcode("reader");
+function startScanner() {
+  scanner = new Html5Qrcode("reader");
 
+  scanner.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: { width: 250, height: 250 },
+      aspectRatio: 1.0
+    },
+    function(decodedText) {
+      if (processing) return;
 
-      scanner.start(
+      const employeeId = String(decodedText).trim();
+      if (!employeeId) return;
 
-        {
-          facingMode: "environment"
-        },
+      processing = true;
 
-        {
+      showResult("⏳ Checking employee...", "info");
 
-          fps: 10,
-
-          qrbox: {
-            width: 250,
-            height: 250
-          },
-
-          aspectRatio: 1.0
-
-        },
-
-
-        // =================================
-        // QR CODE DETECTED
-        // =================================
-
-        function(decodedText) {
-
-          if (processing) {
-            return;
-          }
-
-          processing = true;
-
-
-          showResult(
-            "⏳ Checking employee...",
-            "info"
-          );
-
-
-          scanner.stop()
-            .then(function() {
-
-              google.script.run
-
-                .withSuccessHandler(
-                  handleResult
-                )
-
-                .withFailureHandler(
-                  handleError
-                )
-
-                .processLunchClaim(
-                  decodedText
-                );
-
-            });
-
-        },
-
-
-        // =================================
-        // NORMAL SCANNING ERRORS
-        // =================================
-
-        function(errorMessage) {
-
-          // Ignore normal scanning errors.
-
-        }
-
-      )
-
-
-      .then(function() {
-
-        showResult(
-          "📷 Ready — Scan Employee QR",
-          "info"
-        );
-
-      })
-
-
-      .catch(function(error) {
-
-        showResult(
-
-          "❌ CAMERA ERROR<br><br>" +
-          error,
-
-          "error"
-
-        );
-
-      });
-
+      // Camera stays running. No scanner.stop().
+      claimEmployee(employeeId);
+    },
+    function(errorMessage) {
+      // Normal QR scanning misses are ignored.
     }
-
-
-    // =====================================
-    // HANDLE RESULT
-    // =====================================
-
-    function handleResult(response) {
-
-
-      // ===================================
-      // CLAIMED
-      // ===================================
-
-      if (
-        response.status === "CLAIMED"
-      ) {
-
-        showResult(
-
-          "🟢 <div class='status'>" +
-          "LUNCH CLAIMED" +
-          "</div>" +
-
-          "<div class='name'>" +
-          response.name +
-          "</div>" +
-
-          "<div>" +
-          response.employeeId +
-          "</div>" +
-
-          "<div>" +
-          response.time +
-          "</div>",
-
-          "success"
-
-        );
-
-      }
-
-
-      // ===================================
-      // ALREADY CLAIMED
-      // ===================================
-
-      else if (
-        response.status ===
-        "ALREADY_CLAIMED"
-      ) {
-
-        showResult(
-
-          "🔴 <div class='status'>" +
-          "ALREADY CLAIMED" +
-          "</div>" +
-
-          "<div class='name'>" +
-          response.name +
-          "</div>" +
-
-          "<div>" +
-          response.employeeId +
-          "</div>" +
-
-          "<div>Claimed at " +
-          response.time +
-          "</div>",
-
-          "error"
-
-        );
-
-      }
-
-
-      // ===================================
-      // NOT ELIGIBLE
-      // ===================================
-
-      else if (
-        response.status ===
-        "NOT_ELIGIBLE"
-      ) {
-
-        showResult(
-
-          "🔴 <div class='status'>" +
-          "NOT ELIGIBLE" +
-          "</div>" +
-
-          "<div class='name'>" +
-          response.name +
-          "</div>" +
-
-          "<div>" +
-          response.message +
-          "</div>",
-
-          "error"
-
-        );
-
-      }
-
-
-      // ===================================
-      // NOT FOUND
-      // ===================================
-
-      else if (
-        response.status ===
-        "NOT_FOUND"
-      ) {
-
-        showResult(
-
-          "❌ <div class='status'>" +
-          "EMPLOYEE NOT FOUND" +
-          "</div>" +
-
-          "<div>" +
-          response.employeeId +
-          "</div>",
-
-          "error"
-
-        );
-
-      }
-
-
-      // ===================================
-      // UNKNOWN RESPONSE
-      // ===================================
-
-      else {
-
-        showResult(
-          "⚠️ Unexpected response.",
-          "error"
-        );
-
-      }
-
-
-      // ===================================
-      // RESTART AFTER 3 SECONDS
-      // ===================================
-
-      setTimeout(
-        restartScanner,
-        3000
-      );
-
-    }
-
-
-    // =====================================
-    // HANDLE ERROR
-    // =====================================
-
-    function handleError(error) {
-
-      showResult(
-
-        "⚠️ SYSTEM ERROR<br><br>" +
-        error.message,
-
-        "error"
-
-      );
-
-
-      setTimeout(
-        restartScanner,
-        3000
-      );
-
-    }
-
-
-    // =====================================
-    // RESTART SCANNER
-    // =====================================
-
-    function restartScanner() {
-
-      processing = false;
-
-
-      document.getElementById(
-        "reader"
-      ).innerHTML = "";
-
-
-      showResult(
-        "📷 Starting camera...",
-        "info"
-      );
-
-
-      startScanner();
-
-    }
-
-
-    // =====================================
-    // PAGE LOAD
-    // =====================================
-
-    window.onload = function() {
-
-      startScanner();
-
-    };
-
-  </script>
-
+  )
+  .then(function() {
+    showResult("📷 Ready — Scan Employee QR", "info");
+  })
+  .catch(function(error) {
+    showResult(
+      "❌ CAMERA ERROR<br><br>" +
+      escapeHtml(error),
+      "error"
+    );
+  });
+}
+
+function handleResult(response) {
+  if (!response || !response.status) {
+    handleError({message: "Invalid response from server."});
+    return;
+  }
+
+  if (response.status === "CLAIMED") {
+    scanCount++;
+    updateScanCount();
+
+    showResult(
+      "🟢 <div class='status'>LUNCH CLAIMED</div>" +
+      "<div class='name'>" + escapeHtml(response.name) + "</div>" +
+      "<div>" + escapeHtml(response.employeeId) + "</div>" +
+      "<div>" + escapeHtml(response.time) + "</div>",
+      "success"
+    );
+  }
+  else if (response.status === "ALREADY_CLAIMED") {
+    showResult(
+      "🔴 <div class='status'>ALREADY CLAIMED</div>" +
+      "<div class='name'>" + escapeHtml(response.name) + "</div>" +
+      "<div>" + escapeHtml(response.employeeId) + "</div>" +
+      "<div>Claimed at " + escapeHtml(response.time) + "</div>",
+      "error"
+    );
+  }
+  else if (response.status === "NOT_ELIGIBLE") {
+    showResult(
+      "🔴 <div class='status'>NOT ELIGIBLE</div>" +
+      "<div class='name'>" + escapeHtml(response.name) + "</div>" +
+      "<div>" + escapeHtml(response.message) + "</div>",
+      "error"
+    );
+  }
+  else if (response.status === "NOT_FOUND") {
+    showResult(
+      "❌ <div class='status'>EMPLOYEE NOT FOUND</div>" +
+      "<div>" + escapeHtml(response.employeeId) + "</div>",
+      "error"
+    );
+  }
+  else {
+    showResult("⚠️ SYSTEM ERROR", "error");
+  }
+
+  setTimeout(function() {
+    processing = false;
+    showResult("📷 Ready — Scan Next Employee", "info");
+  }, 1800);
+}
+
+function handleError(error) {
+  showResult(
+    "⚠️ SYSTEM ERROR<br><br>" +
+    escapeHtml(error && error.message ? error.message : error),
+    "error"
+  );
+
+  setTimeout(function() {
+    processing = false;
+    showResult("📷 Ready — Scan Next Employee", "info");
+  }, 1800);
+}
+
+function updateScanCount() {
+  document.getElementById("scanCount").innerText =
+    "Successful claims this session: " + scanCount;
+}
+
+window.addEventListener("load", startScanner);
+</script>
 </body>
 </html>
