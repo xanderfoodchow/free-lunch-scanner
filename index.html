@@ -150,69 +150,56 @@ function startScanner() {
     return;
   }
 
-  // =====================================
-  // EXTRACT EMPLOYEE ID FROM QR
-  // =====================================
+  console.log("RAW QR:", decodedText);
 
-  let employeeId = '';
+  let employeeId = "";
+
+  // QR is expected to contain:
+  // https://script.google.com/.../exec?claim=FC-00011
 
   try {
 
-    const scannedUrl =
-      new URL(decodedText);
-
-    // QR format:
-    // https://.../exec?claim=FC-00011
+    const qrUrl = new URL(decodedText);
 
     employeeId =
-      String(
-        scannedUrl.searchParams.get('claim') || ''
-      ).trim();
+      qrUrl.searchParams.get("claim") || "";
 
   } catch (error) {
 
-    // Support QR containing plain ID
-    // Example: FC-00011
+    // Also allow a QR containing just:
+    // FC-00011
 
-    employeeId =
-      String(decodedText).trim();
+    employeeId = decodedText;
 
   }
 
+  employeeId =
+    String(employeeId)
+      .trim()
+      .toUpperCase();
 
-  // =====================================
-  // INVALID QR
-  // =====================================
+  console.log("EXTRACTED EMPLOYEE ID:", employeeId);
 
   if (!employeeId) {
 
     showResult(
-      "❌ Invalid Employee QR Code",
+      "❌ INVALID QR CODE",
       "error"
     );
 
     return;
-
   }
-
 
   processing = true;
 
-
-  // =====================================
-  // SHOW CHECKING
-  // =====================================
-
   showResult(
-
     "⏳ Checking employee...<br><br>" +
-    "<b>" +
-    employeeId +
-    "</b>",
-
+    "<b>" + employeeId + "</b>",
     "info"
-
   );
+
+  claimEmployee(employeeId);
+},
 
 
   // =====================================
