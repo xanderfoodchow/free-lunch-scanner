@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Free Lunch Scanner</title>
 
-  <script src="https://unpkg.com/html5-qrcode"
-          type="text/javascript"></script>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
   <style>
     body {
@@ -37,24 +34,25 @@
       margin: 20px auto;
       padding: 20px;
       border-radius: 12px;
-      background: white;
+      background: #fff3cd;
+      color: #856404;
       font-size: 20px;
       box-sizing: border-box;
     }
 
     .success {
       background: #d4edda !important;
-      color: #155724;
+      color: #155724 !important;
     }
 
     .error {
       background: #f8d7da !important;
-      color: #721c24;
+      color: #721c24 !important;
     }
 
     .info {
       background: #fff3cd !important;
-      color: #856404;
+      color: #856404 !important;
     }
 
     .name {
@@ -73,25 +71,21 @@
 
 <body>
 
-  <h1>🍱 Free Lunch Scanner</h1>
+<h1>🍱 Free Lunch Scanner</h1>
+<p>Scan Employee QR Code</p>
 
-  <p>Scan Employee QR Code</p>
+<div id="reader"></div>
 
-  <div id="reader"></div>
-
-  <div id="result" class="info">
-    📷 Camera is starting...
-  </div>
-
+<div id="result" class="info">
+  📷 Camera is starting...
+</div>
 
 <script>
 
 const API_URL =
-"https://script.google.com/macros/s/AKfycbw056MlHvMWgKzfm8KWXbhwHGA-qz1MHWsjP1M4wekvHTL64Qfg1PioHsQ601BeBCsr/exec";
-
+  "https://script.google.com/macros/s/AKfycbw056MlHvMWgKzfm8KWXbhwHGA-qz1MHWsjP1M4wekvHTL64Qfg1PioHsQ601BeBCsr/exec";
 
 let scanner = null;
-
 let processing = false;
 
 
@@ -105,9 +99,7 @@ function showResult(message, type) {
     document.getElementById("result");
 
   result.className = type;
-
   result.innerHTML = message;
-
 }
 
 
@@ -117,9 +109,18 @@ function showResult(message, type) {
 
 function startScanner() {
 
-  scanner =
-    new Html5Qrcode("reader");
+  if (typeof Html5Qrcode === "undefined") {
 
+    showResult(
+      "❌ Scanner library failed to load.<br><br>" +
+      "Please check your internet connection.",
+      "error"
+    );
+
+    return;
+  }
+
+  scanner = new Html5Qrcode("reader");
 
   scanner.start(
 
@@ -129,92 +130,85 @@ function startScanner() {
 
     {
       fps: 10,
-
       qrbox: {
         width: 250,
         height: 250
       },
-
       aspectRatio: 1.0
+    },
+
+    function(decodedText) {
+
+      if (processing) {
+        return;
+      }
+
+      console.log("RAW QR:", decodedText);
+
+      let employeeId = "";
+
+      // =====================================
+      // EXTRACT CLAIM FROM QR URL
+      // =====================================
+
+      try {
+
+        const qrUrl =
+          new URL(decodedText);
+
+        employeeId =
+          qrUrl.searchParams.get("claim") || "";
+
+      } catch (error) {
+
+        // Also support QR containing only:
+        // FC-00011
+
+        employeeId =
+          decodedText;
+
+      }
+
+      employeeId =
+        String(employeeId)
+          .trim()
+          .toUpperCase();
+
+      console.log(
+        "EMPLOYEE ID:",
+        employeeId
+      );
+
+      if (!employeeId) {
+
+        showResult(
+          "❌ INVALID EMPLOYEE QR",
+          "error"
+        );
+
+        return;
+      }
+
+      processing = true;
+
+      showResult(
+
+        "⏳ Checking employee...<br><br>" +
+        "<b>" +
+        employeeId +
+        "</b>",
+
+        "info"
+
+      );
+
+      claimEmployee(employeeId);
 
     },
 
-
-    // =================================
-    // QR DETECTED
-    // =================================
-
- function(decodedText) {
-
-  if (processing) {
-    return;
-  }
-
-  console.log("RAW QR:", decodedText);
-
-  let employeeId = "";
-
-  // QR is expected to contain:
-  // https://script.google.com/.../exec?claim=FC-00011
-
-  try {
-
-    const qrUrl = new URL(decodedText);
-
-    employeeId =
-      qrUrl.searchParams.get("claim") || "";
-
-  } catch (error) {
-
-    // Also allow a QR containing just:
-    // FC-00011
-
-    employeeId = decodedText;
-
-  }
-
-  employeeId =
-    String(employeeId)
-      .trim()
-      .toUpperCase();
-
-  console.log("EXTRACTED EMPLOYEE ID:", employeeId);
-
-  if (!employeeId) {
-
-    showResult(
-      "❌ INVALID QR CODE",
-      "error"
-    );
-
-    return;
-  }
-
-  processing = true;
-
-  showResult(
-    "⏳ Checking employee...<br><br>" +
-    "<b>" + employeeId + "</b>",
-    "info"
-  );
-
-  claimEmployee(employeeId);
-},
-
-
-  // =====================================
-  // SEND ONLY EMPLOYEE ID
-  // =====================================
-
-  claimEmployee(employeeId);
-
-},
-
-
-    // Normal scanning errors
     function(errorMessage) {
 
-      // Ignore normal scan errors.
+      // Normal scanning errors are ignored.
 
     }
 
@@ -223,16 +217,18 @@ function startScanner() {
   .then(function() {
 
     showResult(
-
-      "📷 Ready — Scan Employee QR",
-
+      "📷 READY — SCAN EMPLOYEE QR",
       "info"
-
     );
 
   })
 
   .catch(function(error) {
+
+    console.error(
+      "CAMERA ERROR:",
+      error
+    );
 
     showResult(
 
@@ -249,7 +245,7 @@ function startScanner() {
 
 
 // =====================================
-// CONTACT APPS SCRIPT API
+// CONTACT APPS SCRIPT
 // =====================================
 
 function claimEmployee(employeeId) {
@@ -286,22 +282,16 @@ function claimEmployee(employeeId) {
   const script =
     document.createElement("script");
 
-
   script.id =
     callbackName;
-
 
   script.src =
     API_URL +
     "?action=claim" +
     "&employeeId=" +
-    encodeURIComponent(
-      employeeId
-    ) +
+    encodeURIComponent(employeeId) +
     "&callback=" +
-    encodeURIComponent(
-      callbackName
-    );
+    encodeURIComponent(callbackName);
 
 
   script.onerror =
@@ -319,35 +309,28 @@ function claimEmployee(employeeId) {
     };
 
 
-  document.body.appendChild(
-    script
-  );
+  document.body.appendChild(script);
 
 }
 
 
 // =====================================
-// HANDLE API RESULT
+// HANDLE RESULT
 // =====================================
 
 function handleResult(response) {
 
+  console.log(
+    "API RESPONSE:",
+    response
+  );
 
-  // ===================================
-  // CLAIMED
-  // ===================================
-
-  if (
-    response.status === "CLAIMED"
-  ) {
+  if (response.status === "CLAIMED") {
 
     showResult(
 
-      "🟢 " +
-
-      "<div class='status'>" +
-      "LUNCH CLAIMED" +
-      "</div>" +
+      "🟢" +
+      "<div class='status'>LUNCH CLAIMED</div>" +
 
       "<div class='name'>" +
       response.name +
@@ -362,28 +345,18 @@ function handleResult(response) {
       "</div>",
 
       "success"
-
     );
 
   }
 
-
-  // ===================================
-  // ALREADY CLAIMED
-  // ===================================
-
   else if (
-    response.status ===
-    "ALREADY_CLAIMED"
+    response.status === "ALREADY_CLAIMED"
   ) {
 
     showResult(
 
-      "🔴 " +
-
-      "<div class='status'>" +
-      "ALREADY CLAIMED" +
-      "</div>" +
+      "🔴" +
+      "<div class='status'>ALREADY CLAIMED</div>" +
 
       "<div class='name'>" +
       response.name +
@@ -393,34 +366,23 @@ function handleResult(response) {
       response.employeeId +
       "</div>" +
 
-      "<div>" +
-      "Claimed at " +
+      "<div>Claimed at " +
       response.time +
       "</div>",
 
       "error"
-
     );
 
   }
 
-
-  // ===================================
-  // NOT ELIGIBLE
-  // ===================================
-
   else if (
-    response.status ===
-    "NOT_ELIGIBLE"
+    response.status === "NOT_ELIGIBLE"
   ) {
 
     showResult(
 
-      "🔴 " +
-
-      "<div class='status'>" +
-      "NOT ELIGIBLE" +
-      "</div>" +
+      "🔴" +
+      "<div class='status'>NOT ELIGIBLE</div>" +
 
       "<div class='name'>" +
       response.name +
@@ -431,121 +393,86 @@ function handleResult(response) {
       "</div>",
 
       "error"
-
     );
 
   }
 
-
-  // ===================================
-  // NOT FOUND
-  // ===================================
-
   else if (
-    response.status ===
-    "NOT_FOUND"
+    response.status === "NOT_FOUND"
   ) {
 
     showResult(
 
-      "❌ " +
-
-      "<div class='status'>" +
-      "EMPLOYEE NOT FOUND" +
-      "</div>" +
+      "❌" +
+      "<div class='status'>EMPLOYEE NOT FOUND</div>" +
 
       "<div>" +
       response.employeeId +
       "</div>",
 
       "error"
-
     );
 
   }
-
-
-  // ===================================
-  // ERROR
-  // ===================================
 
   else {
 
     showResult(
 
-      "⚠️ " +
-      "<div class='status'>" +
-      "SYSTEM ERROR" +
-      "</div>" +
+      "⚠️" +
+      "<div class='status'>SYSTEM ERROR</div>" +
 
       "<div>" +
-      (response.message ||
-       "Unexpected response.") +
+      (
+        response.message ||
+        "Unexpected response."
+      ) +
       "</div>",
 
       "error"
-
     );
 
   }
-
-
-  // ===================================
-  // READY FOR NEXT EMPLOYEE
-  // ===================================
 
   setTimeout(function() {
 
     processing = false;
 
-
     showResult(
-
-      "📷 Ready — Scan Next Employee",
-
+      "📷 READY — SCAN NEXT EMPLOYEE",
       "info"
-
     );
 
-  }, 2000);
+  }, 3000);
 
 }
 
 
 // =====================================
-// HANDLE CONNECTION ERROR
+// CONNECTION ERROR
 // =====================================
 
 function handleError(error) {
 
   showResult(
 
-    "⚠️ " +
-
-    "<div class='status'>" +
-    "SYSTEM ERROR" +
-    "</div>" +
+    "⚠️" +
+    "<div class='status'>SYSTEM ERROR</div>" +
 
     "<div>" +
     error.message +
     "</div>",
 
     "error"
-
   );
-
 
   setTimeout(function() {
 
     processing = false;
 
-
     showResult(
-
-      "📷 Ready — Scan Next Employee",
-
+      "📷 READY — SCAN NEXT EMPLOYEE",
       "info"
-
     );
 
   }, 3000);
