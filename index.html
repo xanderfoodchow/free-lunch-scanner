@@ -86,6 +86,10 @@
 
 <script>
 
+const API_URL =
+"https://script.google.com/macros/s/AKfycbw056MlHvMWgKzfm8KWXbhwHGA-qz1MHWsjP1M4wekvHTL64Qfg1PioHsQ601BeBCsr/exec";
+
+
 let scanner = null;
 
 let processing = false;
@@ -137,24 +141,26 @@ function startScanner() {
 
 
     // =================================
-    // QR CODE DETECTED
+    // QR DETECTED
     // =================================
 
     function(decodedText) {
-
-      // Prevent multiple reads
-      // of the same QR.
 
       if (processing) {
         return;
       }
 
 
-      processing = true;
-
-
       const employeeId =
         String(decodedText).trim();
+
+
+      if (!employeeId) {
+        return;
+      }
+
+
+      processing = true;
 
 
       showResult(
@@ -170,44 +176,23 @@ function startScanner() {
 
 
       // =================================
-      // DO NOT STOP CAMERA
+      // IMPORTANT
+      // CAMERA IS NOT STOPPED
       // =================================
-      //
-      // This is what makes it continuous.
-      //
-      // Camera stays running while
-      // Apps Script processes the claim.
-      //
 
-      google.script.run
-
-        .withSuccessHandler(
-          handleResult
-        )
-
-        .withFailureHandler(
-          handleError
-        )
-
-        .processLunchClaim(
-          employeeId
-        );
+      claimEmployee(employeeId);
 
     },
 
 
-    // =================================
-    // NORMAL QR SCANNING ERRORS
-    // =================================
-
+    // Normal scanning errors
     function(errorMessage) {
 
-      // Ignore normal scanning errors.
+      // Ignore normal scan errors.
 
     }
 
   )
-
 
   .then(function() {
 
@@ -220,7 +205,6 @@ function startScanner() {
     );
 
   })
-
 
   .catch(function(error) {
 
@@ -239,7 +223,57 @@ function startScanner() {
 
 
 // =====================================
-// HANDLE RESULT
+// CONTACT APPS SCRIPT API
+// =====================================
+
+function claimEmployee(employeeId) {
+
+  const url =
+    API_URL +
+    "?action=claim&employeeId=" +
+    encodeURIComponent(employeeId);
+
+
+  fetch(url, {
+
+    method: "GET",
+
+    redirect: "follow"
+
+  })
+
+  .then(function(response) {
+
+    if (!response.ok) {
+
+      throw new Error(
+        "Server returned HTTP " +
+        response.status
+      );
+
+    }
+
+    return response.json();
+
+  })
+
+  .then(function(data) {
+
+    handleResult(data);
+
+  })
+
+  .catch(function(error) {
+
+    handleError(error);
+
+  });
+
+}
+
+
+// =====================================
+// HANDLE API RESULT
 // =====================================
 
 function handleResult(response) {
@@ -378,14 +412,22 @@ function handleResult(response) {
 
 
   // ===================================
-  // UNKNOWN RESPONSE
+  // ERROR
   // ===================================
 
   else {
 
     showResult(
 
-      "⚠️ Unexpected response.",
+      "⚠️ " +
+      "<div class='status'>" +
+      "SYSTEM ERROR" +
+      "</div>" +
+
+      "<div>" +
+      (response.message ||
+       "Unexpected response.") +
+      "</div>",
 
       "error"
 
@@ -398,72 +440,67 @@ function handleResult(response) {
   // READY FOR NEXT EMPLOYEE
   // ===================================
 
-  setTimeout(
+  setTimeout(function() {
 
-    function() {
-
-      processing = false;
+    processing = false;
 
 
-      showResult(
+    showResult(
 
-        "📷 Ready — Scan Next Employee",
+      "📷 Ready — Scan Next Employee",
 
-        "info"
+      "info"
 
-      );
+    );
 
-    },
-
-    2000
-
-  );
+  }, 2000);
 
 }
 
 
 // =====================================
-// HANDLE ERROR
+// HANDLE CONNECTION ERROR
 // =====================================
 
 function handleError(error) {
 
   showResult(
 
-    "⚠️ SYSTEM ERROR<br><br>" +
-    error.message,
+    "⚠️ " +
+
+    "<div class='status'>" +
+    "SYSTEM ERROR" +
+    "</div>" +
+
+    "<div>" +
+    error.message +
+    "</div>",
 
     "error"
 
   );
 
 
-  setTimeout(
+  setTimeout(function() {
 
-    function() {
-
-      processing = false;
+    processing = false;
 
 
-      showResult(
+    showResult(
 
-        "📷 Ready — Scan Next Employee",
+      "📷 Ready — Scan Next Employee",
 
-        "info"
+      "info"
 
-      );
+    );
 
-    },
-
-    2000
-
-  );
+  }, 3000);
 
 }
 
 
 // =====================================
-// START WHEN PAGE LOADS
+// START
 // =====================================
 
 window.onload = function() {
