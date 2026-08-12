@@ -4,9 +4,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Free Lunch Scanner</title>
 
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script
+    src="https://unpkg.com/html5-qrcode"
+    type="text/javascript">
+  </script>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
       text-align: center;
@@ -26,39 +33,151 @@
       background: white;
       padding: 10px;
       border-radius: 12px;
-      box-sizing: border-box;
+    }
+
+    .card {
+      max-width: 450px;
+      margin: 15px auto;
+      padding: 20px;
+      border-radius: 15px;
+      background: white;
+      box-shadow: 0 3px 12px rgba(0,0,0,.08);
     }
 
     #result {
-      max-width: 450px;
-      margin: 20px auto;
-      padding: 20px;
-      border-radius: 12px;
-      background: #fff3cd;
-      color: #856404;
-      font-size: 20px;
-      box-sizing: border-box;
+      min-height: 70px;
+      font-size: 18px;
     }
 
     .success {
       background: #d4edda !important;
-      color: #155724 !important;
+      color: #155724;
     }
 
     .error {
       background: #f8d7da !important;
-      color: #721c24 !important;
+      color: #721c24;
     }
 
     .info {
       background: #fff3cd !important;
-      color: #856404 !important;
+      color: #856404;
     }
 
     .name {
       font-size: 26px;
       font-weight: bold;
-      margin: 10px 0;
+      margin: 8px 0;
+    }
+
+    .employee-id {
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    .balance-label {
+      font-size: 15px;
+      color: #666;
+    }
+
+    .balance {
+      font-size: 34px;
+      font-weight: bold;
+      color: #28a745;
+      margin: 8px 0 15px;
+    }
+
+    .meal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .meal-btn {
+      border: none;
+      border-radius: 12px;
+      padding: 16px 10px;
+      background: #222;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .meal-btn:hover {
+      opacity: .85;
+    }
+
+    .meal-price {
+      display: block;
+      margin-top: 5px;
+      font-size: 14px;
+      font-weight: normal;
+    }
+
+    .manual-btn {
+      width: 100%;
+      margin-top: 12px;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: #555;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .payment-box {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 12px;
+    }
+
+    .amount {
+      font-size: 18px;
+      margin: 8px 0;
+    }
+
+    .cash-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 18px;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .confirm-btn {
+      width: 100%;
+      margin-top: 15px;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      background: #28a745;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .cancel-btn {
+      width: 100%;
+      margin-top: 8px;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: #777;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
     }
 
     .status {
@@ -66,29 +185,163 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
+
+    .no-balance {
+      color: #dc3545;
+      font-weight: bold;
+      font-size: 20px;
+      padding: 15px;
+    }
   </style>
 </head>
 
 <body>
 
 <h1>🍱 Free Lunch Scanner</h1>
+
 <p>Scan Employee QR Code</p>
 
 <div id="reader"></div>
 
-<div id="result" class="info">
+<div id="result" class="card info">
   📷 Camera is starting...
 </div>
 
+
+<!-- EMPLOYEE CARD -->
+
+<div id="employeeCard" class="card hidden">
+
+  <div class="name" id="employeeName"></div>
+
+  <div class="employee-id" id="employeeId"></div>
+
+  <div class="balance-label">
+    DAILY WALLET
+  </div>
+
+  <div class="balance" id="employeeBalance">
+    ₱0.00
+  </div>
+
+  <h3>Select Meal</h3>
+
+  <div id="mealList" class="meal-grid"></div>
+
+  <button
+    class="manual-btn"
+    onclick="manualMeal()">
+
+    ✏️ Manual Meryenda Amount
+
+  </button>
+
+</div>
+
+
+<!-- PAYMENT CARD -->
+
+<div id="paymentCard" class="card hidden">
+
+  <h3 id="selectedMealName">
+    Selected Meal
+  </h3>
+
+  <div class="payment-box">
+
+    <div class="amount">
+      Meal Price:
+      <strong id="mealPrice">
+        ₱0.00
+      </strong>
+    </div>
+
+    <div class="amount">
+      Wallet Used:
+      <strong id="walletUsed">
+        ₱0.00
+      </strong>
+    </div>
+
+    <div class="amount">
+      Cash Needed:
+      <strong id="cashNeeded">
+        ₱0.00
+      </strong>
+    </div>
+
+    <div class="amount">
+      Remaining Wallet:
+      <strong id="remainingBalance">
+        ₱0.00
+      </strong>
+    </div>
+
+    <div id="cashInputBox" class="hidden">
+
+      <input
+        id="cashInput"
+        class="cash-input"
+        type="number"
+        min="0"
+        step="0.01"
+        placeholder="Enter cash amount">
+
+    </div>
+
+  </div>
+
+
+  <button
+    class="confirm-btn"
+    onclick="confirmPurchase()">
+
+    ✅ Confirm Purchase
+
+  </button>
+
+
+  <button
+    class="cancel-btn"
+    onclick="cancelPurchase()">
+
+    Cancel
+
+  </button>
+
+</div>
+
+
 <script>
+
+/* =====================================
+   API
+===================================== */
 
 const API_URL =
   "https://script.google.com/macros/s/AKfycbw056MlHvMWgKzfm8KWXbhwHGA-qz1MHWsjP1M4wekvHTL64Qfg1PioHsQ601BeBCsr/exec";
 
+
+/* =====================================
+   VARIABLES
+===================================== */
+
 let scanner = null;
+
 let processing = false;
 
-  function beep(type) {
+let currentEmployee = null;
+
+let currentMeal = null;
+
+let currentBalance = 0;
+
+
+/* =====================================
+   BEEP
+===================================== */
+
+function beep(type) {
 
   const AudioContext =
     window.AudioContext ||
@@ -106,13 +359,15 @@ let processing = false;
     audioContext.createGain();
 
   oscillator.connect(gain);
-  gain.connect(audioContext.destination);
 
-  if (type === "success") {
-    oscillator.frequency.value = 1000;
-  } else {
-    oscillator.frequency.value = 400;
-  }
+  gain.connect(
+    audioContext.destination
+  );
+
+  oscillator.frequency.value =
+    type === "success"
+      ? 1000
+      : 400;
 
   gain.gain.setValueAtTime(
     0.3,
@@ -124,56 +379,78 @@ let processing = false;
   oscillator.stop(
     audioContext.currentTime + 0.15
   );
+
 }
 
 
-// =====================================
-// SHOW RESULT
-// =====================================
+/* =====================================
+   SHOW RESULT
+===================================== */
 
-function showResult(message, type) {
+function showResult(
+  message,
+  type
+) {
 
   const result =
-    document.getElementById("result");
+    document.getElementById(
+      "result"
+    );
 
-  result.className = type;
-  result.innerHTML = message;
+  result.className =
+    "card " + type;
+
+  result.innerHTML =
+    message;
+
 }
 
 
-// =====================================
-// START SCANNER
-// =====================================
+/* =====================================
+   START SCANNER
+===================================== */
 
 function startScanner() {
 
-  if (typeof Html5Qrcode === "undefined") {
+  if (
+    typeof Html5Qrcode ===
+    "undefined"
+  ) {
 
     showResult(
-      "❌ Scanner library failed to load.<br><br>" +
-      "Please check your internet connection.",
+      "❌ Scanner library failed to load.",
       "error"
     );
 
     return;
+
   }
 
-  scanner = new Html5Qrcode("reader");
+
+  scanner =
+    new Html5Qrcode(
+      "reader"
+    );
+
 
   scanner.start(
 
     {
-      facingMode: "environment"
+      facingMode:
+        "environment"
     },
 
     {
       fps: 10,
+
       qrbox: {
         width: 250,
         height: 250
       },
+
       aspectRatio: 1.0
     },
+
 
     function(decodedText) {
 
@@ -181,43 +458,50 @@ function startScanner() {
         return;
       }
 
-      console.log("RAW QR:", decodedText);
+
+      console.log(
+        "RAW QR:",
+        decodedText
+      );
+
 
       let employeeId = "";
 
-      // =====================================
-      // EXTRACT CLAIM FROM QR URL
-      // =====================================
+
+      /* =================================
+         EXTRACT EMPLOYEE ID
+      ================================= */
 
       try {
 
         const qrUrl =
-          new URL(decodedText);
+          new URL(
+            decodedText
+          );
 
         employeeId =
-          qrUrl.searchParams.get("claim") || "";
+          qrUrl.searchParams
+            .get("claim") || "";
 
-      } catch (error) {
+      }
 
-        // Also support QR containing only:
-        // FC-00011
+      catch (error) {
 
         employeeId =
           decodedText;
 
       }
 
+
       employeeId =
         String(employeeId)
           .trim()
           .toUpperCase();
 
-      console.log(
-        "EMPLOYEE ID:",
-        employeeId
-      );
 
       if (!employeeId) {
+
+        beep("error");
 
         showResult(
           "❌ INVALID EMPLOYEE QR",
@@ -225,28 +509,35 @@ function startScanner() {
         );
 
         return;
+
       }
 
+
       processing = true;
+
 
       showResult(
 
         "⏳ Checking employee...<br><br>" +
         "<b>" +
-        employeeId +
+        escapeHtml(employeeId) +
         "</b>",
 
         "info"
 
       );
 
-      claimEmployee(employeeId);
+
+      getEmployee(
+        employeeId
+      );
 
     },
 
+
     function(errorMessage) {
 
-      // Normal scanning errors are ignored.
+      // Normal scanner errors ignored.
 
     }
 
@@ -269,12 +560,9 @@ function startScanner() {
     );
 
     showResult(
-
       "❌ CAMERA ERROR<br><br>" +
       error,
-
       "error"
-
     );
 
   });
@@ -282,26 +570,35 @@ function startScanner() {
 }
 
 
-// =====================================
-// CONTACT APPS SCRIPT
-// =====================================
+/* =====================================
+   GET EMPLOYEE
+===================================== */
 
-function claimEmployee(employeeId) {
+function getEmployee(
+  employeeId
+) {
 
   const callbackName =
     "lunchCallback_" +
     Date.now();
+
 
   window[callbackName] =
     function(response) {
 
       try {
 
-        handleResult(response);
+        handleEmployee(
+          response
+        );
 
-      } finally {
+      }
 
-        delete window[callbackName];
+      finally {
+
+        delete window[
+          callbackName
+        ];
 
         const script =
           document.getElementById(
@@ -318,24 +615,34 @@ function claimEmployee(employeeId) {
 
 
   const script =
-    document.createElement("script");
+    document.createElement(
+      "script"
+    );
+
 
   script.id =
     callbackName;
 
+
   script.src =
     API_URL +
-    "?action=claim" +
+    "?action=getEmployee" +
     "&employeeId=" +
-    encodeURIComponent(employeeId) +
+    encodeURIComponent(
+      employeeId
+    ) +
     "&callback=" +
-    encodeURIComponent(callbackName);
+    encodeURIComponent(
+      callbackName
+    );
 
 
   script.onerror =
     function() {
 
-      delete window[callbackName];
+      delete window[
+        callbackName
+      ];
 
       script.remove();
 
@@ -347,188 +654,809 @@ function claimEmployee(employeeId) {
     };
 
 
-  document.body.appendChild(script);
+  document.body.appendChild(
+    script
+  );
 
 }
 
 
-// =====================================
-// HANDLE RESULT
-// =====================================
+/* =====================================
+   EMPLOYEE RESPONSE
+===================================== */
 
-function handleResult(response) {
+function handleEmployee(
+  response
+) {
 
   console.log(
-    "API RESPONSE:",
+    "EMPLOYEE RESPONSE:",
     response
   );
 
-  if (response.status === "CLAIMED") {
-    beep("success");
 
-    showResult(
+  if (
+    !response ||
+    !response.status
+  ) {
 
-      "🟢" +
-      "<div class='status'>LUNCH CLAIMED</div>" +
+    handleError({
+      message:
+        "Unexpected response from lunch system."
+    });
 
-      "<div class='name'>" +
-      response.name +
-      "</div>" +
-
-      "<div>" +
-      response.employeeId +
-      "</div>" +
-
-      "<div>" +
-      response.time +
-      "</div>",
-
-      "success"
-    );
+    return;
 
   }
 
-  else if (
-    response.status === "ALREADY_CLAIMED"
+
+  if (
+    response.status !==
+    "OK"
   ) {
+
     beep("error");
 
-    showResult(
 
-      "🔴" +
-      "<div class='status'>ALREADY CLAIMED</div>" +
+    if (
+      response.status ===
+      "NOT_FOUND"
+    ) {
 
-      "<div class='name'>" +
-      response.name +
-      "</div>" +
+      showResult(
 
-      "<div>" +
-      response.employeeId +
-      "</div>" +
+        "❌ <div class='status'>" +
+        "EMPLOYEE NOT FOUND" +
+        "</div>" +
 
-      "<div>Claimed at " +
-      response.time +
-      "</div>",
+        "<div>" +
+        escapeHtml(
+          response.employeeId
+        ) +
+        "</div>",
 
-      "error"
-    );
+        "error"
+
+      );
+
+    }
+
+    else if (
+      response.status ===
+      "NOT_ELIGIBLE"
+    ) {
+
+      showResult(
+
+        "🔴 <div class='status'>" +
+        "NOT ELIGIBLE" +
+        "</div>" +
+
+        "<div class='name'>" +
+        escapeHtml(
+          response.name
+        ) +
+        "</div>" +
+
+        "<div>" +
+        escapeHtml(
+          response.message
+        ) +
+        "</div>",
+
+        "error"
+
+      );
+
+    }
+
+    else {
+
+      showResult(
+
+        "⚠️ <div class='status'>" +
+        "SYSTEM ERROR" +
+        "</div>" +
+
+        "<div>" +
+        escapeHtml(
+          response.message ||
+          "Unable to process employee."
+        ) +
+        "</div>",
+
+        "error"
+
+      );
+
+    }
+
+
+    resetAfterDelay();
+
+    return;
 
   }
 
-  else if (
-    response.status === "NOT_ELIGIBLE"
+
+  /* =================================
+     SAVE EMPLOYEE
+  ================================= */
+
+  currentEmployee =
+    response;
+
+
+  currentBalance =
+    Number(
+      response.balance
+    ) || 0;
+
+
+  /* =================================
+     DISPLAY EMPLOYEE
+  ================================= */
+
+  document.getElementById(
+    "employeeName"
+  ).innerText =
+    response.name;
+
+
+  document.getElementById(
+    "employeeId"
+  ).innerText =
+    response.employeeId;
+
+
+  document.getElementById(
+    "employeeBalance"
+  ).innerText =
+    "₱" +
+    currentBalance.toFixed(2);
+
+
+  document.getElementById(
+    "employeeCard"
+  ).classList.remove(
+    "hidden"
+  );
+
+
+  beep("success");
+
+
+  showResult(
+    "👤 Employee verified. Select meal.",
+    "info"
+  );
+
+
+  /* =================================
+     NO BALANCE
+  ================================= */
+
+  if (
+    currentBalance <= 0
   ) {
 
     showResult(
 
-      "🔴" +
-      "<div class='status'>NOT ELIGIBLE</div>" +
-
-      "<div class='name'>" +
-      response.name +
+      "🔴 <div class='status'>" +
+      "NO BALANCE AVAILABLE" +
       "</div>" +
 
       "<div>" +
-      response.message +
+      escapeHtml(
+        response.name
+      ) +
       "</div>",
 
       "error"
+
     );
+
+
+    document.getElementById(
+      "mealList"
+    ).innerHTML =
+
+      "<div class='no-balance' " +
+      "style='grid-column:1/-1'>" +
+
+      "NO BALANCE AVAILABLE" +
+
+      "</div>";
+
+    return;
 
   }
 
-  else if (
-    response.status === "NOT_FOUND"
+
+  /* =================================
+     LOAD MEALS
+  ================================= */
+
+  displayMeals(
+    response.meals || []
+  );
+
+}
+
+
+/* =====================================
+   DISPLAY MEALS
+===================================== */
+
+function displayMeals(
+  meals
+) {
+
+  const mealList =
+    document.getElementById(
+      "mealList"
+    );
+
+
+  mealList.innerHTML = "";
+
+
+  if (
+    !meals ||
+    meals.length === 0
   ) {
 
-    showResult(
+    mealList.innerHTML =
 
-      "❌" +
-      "<div class='status'>EMPLOYEE NOT FOUND</div>" +
+      "<div style='grid-column:1/-1'>" +
+      "No meals available." +
+      "</div>";
 
-      "<div>" +
-      response.employeeId +
-      "</div>",
+    return;
 
-      "error"
+  }
+
+
+  meals.forEach(
+    function(meal) {
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+
+      button.className =
+        "meal-btn";
+
+
+      button.innerHTML =
+
+        escapeHtml(
+          meal.name
+        ) +
+
+        "<span class='meal-price'>" +
+
+        "₱" +
+
+        Number(
+          meal.price
+        ).toFixed(2) +
+
+        "</span>";
+
+
+      button.onclick =
+        function() {
+
+          selectMeal(
+            meal
+          );
+
+        };
+
+
+      mealList.appendChild(
+        button
+      );
+
+    }
+  );
+
+}
+
+
+/* =====================================
+   SELECT MEAL
+===================================== */
+
+function selectMeal(
+  meal
+) {
+
+  currentMeal =
+    meal;
+
+
+  const price =
+    Number(
+      meal.price
+    ) || 0;
+
+
+  calculatePayment(
+    price,
+    meal.name
+  );
+
+}
+
+
+/* =====================================
+   MANUAL MERYENDA
+===================================== */
+
+function manualMeal() {
+
+  const amount =
+    prompt(
+      "Enter meryenda amount:"
     );
+
+
+  if (
+    amount === null
+  ) {
+    return;
+  }
+
+
+  const price =
+    Number(amount);
+
+
+  if (
+    !isFinite(price) ||
+    price <= 0
+  ) {
+
+    alert(
+      "Please enter a valid amount."
+    );
+
+    return;
+
+  }
+
+
+  currentMeal = {
+
+    id:
+      "MANUAL",
+
+    name:
+      "Manual Meryenda",
+
+    price:
+      price
+
+  };
+
+
+  calculatePayment(
+    price,
+    "Manual Meryenda"
+  );
+
+}
+
+
+/* =====================================
+   CALCULATE PAYMENT
+===================================== */
+
+function calculatePayment(
+  price,
+  mealName
+) {
+
+  const walletUsed =
+    Math.min(
+      currentBalance,
+      price
+    );
+
+
+  const cashNeeded =
+    Math.max(
+      price - currentBalance,
+      0
+    );
+
+
+  const remaining =
+    Math.max(
+      currentBalance - price,
+      0
+    );
+
+
+  document.getElementById(
+    "selectedMealName"
+  ).innerText =
+    mealName;
+
+
+  document.getElementById(
+    "mealPrice"
+  ).innerText =
+    "₱" +
+    price.toFixed(2);
+
+
+  document.getElementById(
+    "walletUsed"
+  ).innerText =
+    "₱" +
+    walletUsed.toFixed(2);
+
+
+  document.getElementById(
+    "cashNeeded"
+  ).innerText =
+    "₱" +
+    cashNeeded.toFixed(2);
+
+
+  document.getElementById(
+    "remainingBalance"
+  ).innerText =
+    "₱" +
+    remaining.toFixed(2);
+
+
+  const cashBox =
+    document.getElementById(
+      "cashInputBox"
+    );
+
+
+  if (
+    cashNeeded > 0
+  ) {
+
+    cashBox.classList.remove(
+      "hidden"
+    );
+
+
+    document.getElementById(
+      "cashInput"
+    ).value =
+
+      cashNeeded.toFixed(2);
 
   }
 
   else {
 
-    showResult(
-
-      "⚠️" +
-      "<div class='status'>SYSTEM ERROR</div>" +
-
-      "<div>" +
-      (
-        response.message ||
-        "Unexpected response."
-      ) +
-      "</div>",
-
-      "error"
+    cashBox.classList.add(
+      "hidden"
     );
+
+    document.getElementById(
+      "cashInput"
+    ).value =
+      "";
 
   }
 
-  setTimeout(function() {
 
-    processing = false;
-
-    showResult(
-      "📷 READY — SCAN NEXT EMPLOYEE",
-      "info"
-    );
-
-  }, 3000);
+  document.getElementById(
+    "paymentCard"
+  ).classList.remove(
+    "hidden"
+  );
 
 }
 
 
-// =====================================
-// CONNECTION ERROR
-// =====================================
+/* =====================================
+   CONFIRM PURCHASE
+===================================== */
 
-function handleError(error) {
+function confirmPurchase() {
+
+  if (
+    !currentEmployee ||
+    !currentMeal
+  ) {
+
+    return;
+
+  }
+
+
+  const price =
+    Number(
+      currentMeal.price
+    ) || 0;
+
+
+  const walletUsed =
+    Math.min(
+      currentBalance,
+      price
+    );
+
+
+  const cashNeeded =
+    Math.max(
+      price - currentBalance,
+      0
+    );
+
+
+  let cashPaid = 0;
+
+
+  if (
+    cashNeeded > 0
+  ) {
+
+    cashPaid =
+      Number(
+        document.getElementById(
+          "cashInput"
+        ).value
+      ) || 0;
+
+
+    if (
+      cashPaid < cashNeeded
+    ) {
+
+      alert(
+        "Please enter at least ₱" +
+        cashNeeded.toFixed(2)
+      );
+
+      return;
+
+    }
+
+  }
+
+
+  /*
+   * STEP 2 ONLY
+   *
+   * For now we display the transaction.
+   * Actual saving/deduction will be
+   * connected in Step 3.
+   */
 
   showResult(
 
-    "⚠️" +
-    "<div class='status'>SYSTEM ERROR</div>" +
+    "🟡 <div class='status'>" +
+    "READY TO RECORD" +
+    "</div>" +
+
+    "<div class='name'>" +
+    escapeHtml(
+      currentEmployee.name
+    ) +
+    "</div>" +
 
     "<div>" +
-    error.message +
-    "</div>",
+    escapeHtml(
+      currentMeal.name
+    ) +
+    "</div><br>" +
 
-    "error"
+    "<div>Meal Price: ₱" +
+    price.toFixed(2) +
+    "</div>" +
+
+    "<div>Wallet Used: ₱" +
+    walletUsed.toFixed(2) +
+    "</div>" +
+
+    "<div>Cash Paid: ₱" +
+    cashPaid.toFixed(2) +
+    "</div>" +
+
+    "<div><strong>" +
+    "Remaining Wallet: ₱" +
+    Math.max(
+      currentBalance -
+      walletUsed,
+      0
+    ).toFixed(2) +
+    "</strong></div><br>" +
+
+    "Transaction saving will be connected in Step 3.",
+
+    "info"
+
   );
 
-  setTimeout(function() {
 
-    processing = false;
+  document.getElementById(
+    "paymentCard"
+  ).classList.add(
+    "hidden"
+  );
 
-    showResult(
-      "📷 READY — SCAN NEXT EMPLOYEE",
-      "info"
-    );
 
-  }, 3000);
+  setTimeout(
+    resetScanner,
+    3000
+  );
 
 }
 
 
-// =====================================
-// START
-// =====================================
+/* =====================================
+   CANCEL
+===================================== */
 
-window.onload = function() {
+function cancelPurchase() {
 
-  startScanner();
+  document.getElementById(
+    "paymentCard"
+  ).classList.add(
+    "hidden"
+  );
 
-};
+  currentMeal =
+    null;
+
+}
+
+
+/* =====================================
+   RESET
+===================================== */
+
+function resetScanner() {
+
+  document.getElementById(
+    "employeeCard"
+  ).classList.add(
+    "hidden"
+  );
+
+  document.getElementById(
+    "paymentCard"
+  ).classList.add(
+    "hidden"
+  );
+
+
+  currentEmployee =
+    null;
+
+  currentMeal =
+    null;
+
+  currentBalance =
+    0;
+
+  processing =
+    false;
+
+
+  showResult(
+    "📷 READY — SCAN NEXT EMPLOYEE",
+    "info"
+  );
+
+}
+
+
+function resetAfterDelay() {
+
+  setTimeout(
+    function() {
+
+      resetScanner();
+
+    },
+    2500
+  );
+
+}
+
+
+/* =====================================
+   ERROR
+===================================== */
+
+function handleError(
+  error
+) {
+
+  console.error(
+    "SYSTEM ERROR:",
+    error
+  );
+
+
+  showResult(
+
+    "⚠️ <div class='status'>" +
+    "SYSTEM ERROR" +
+    "</div>" +
+
+    "<div>" +
+    escapeHtml(
+      error.message ||
+      error
+    ) +
+    "</div>",
+
+    "error"
+
+  );
+
+
+  resetAfterDelay();
+
+}
+
+
+/* =====================================
+   ESCAPE HTML
+===================================== */
+
+function escapeHtml(
+  value
+) {
+
+  return String(
+    value || ""
+  )
+
+  .replace(
+    /&/g,
+    "&amp;"
+  )
+
+  .replace(
+    /</g,
+    "&lt;"
+  )
+
+  .replace(
+    />/g,
+    "&gt;"
+  )
+
+  .replace(
+    /"/g,
+    "&quot;"
+  )
+
+  .replace(
+    /'/g,
+    "&#039;"
+  );
+
+}
+
+
+/* =====================================
+   START
+===================================== */
+
+window.onload =
+  function() {
+
+    startScanner();
+
+  };
 
 </script>
 
