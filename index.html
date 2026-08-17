@@ -1,24 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1"
-  >
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
 
   <title>Free Lunch Scanner</title>
 
-
-  <!-- QR Scanner Library -->
-
   <script
     src="https://unpkg.com/html5-qrcode"
-    type="text/javascript"
-  ></script>
-
+    type="text/javascript">
+  </script>
 
   <style>
 
@@ -26,300 +18,228 @@
       box-sizing: border-box;
     }
 
-
     body {
-
       font-family: Arial, sans-serif;
-
       text-align: center;
-
       margin: 0;
-
       padding: 15px;
-
       background: #f5f5f5;
-
     }
-
 
     h1 {
-
       margin-bottom: 5px;
-
     }
 
 
-    /* ================================
-       QR SCANNER
-    ================================= */
+    /* =========================
+       SCANNER
+    ========================= */
 
     #reader {
-
       width: 100%;
-
       max-width: 450px;
-
       margin: 20px auto;
-
       background: white;
-
       padding: 10px;
-
       border-radius: 12px;
-
     }
 
 
-    /* ================================
-       RESULT
-    ================================= */
+    /* =========================
+       RESULT / MEAL SECTION
+    ========================= */
+
+    #result,
+    #mealSection {
+      width: 100%;
+      max-width: 450px;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 12px;
+    }
 
     #result {
-
-      width: 100%;
-
-      max-width: 450px;
-
-      margin: 20px auto;
-
-      padding: 20px;
-
-      border-radius: 12px;
-
       background: white;
-
       font-size: 20px;
-
       min-height: 60px;
-
     }
-
-
-    .success {
-
-      background: #d4edda !important;
-
-      color: #155724 !important;
-
-    }
-
-
-    .error {
-
-      background: #f8d7da !important;
-
-      color: #721c24 !important;
-
-    }
-
-
-    .info {
-
-      background: #fff3cd !important;
-
-      color: #856404 !important;
-
-    }
-
-
-    .name {
-
-      font-size: 24px;
-
-      font-weight: bold;
-
-      margin: 8px 0;
-
-    }
-
-
-    .status {
-
-      font-size: 22px;
-
-      font-weight: bold;
-
-      margin-bottom: 10px;
-
-    }
-
-
-    /* ================================
-       MEAL SECTION
-    ================================= */
 
     #mealSection {
-
-      width: 100%;
-
-      max-width: 450px;
-
-      margin: 20px auto;
-
-      padding: 20px;
-
-      border-radius: 12px;
-
       background: white;
-
       text-align: left;
-
       display: none;
-
     }
 
+
+    /* =========================
+       STATUS COLORS
+    ========================= */
+
+    .success {
+      background: #d4edda !important;
+      color: #155724 !important;
+    }
+
+    .error {
+      background: #f8d7da !important;
+      color: #721c24 !important;
+    }
+
+    .info {
+      background: #fff3cd !important;
+      color: #856404 !important;
+    }
+
+
+    /* =========================
+       EMPLOYEE
+    ========================= */
+
+    .name {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 8px 0;
+    }
+
+    .status {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
 
     .employee-card {
-
       padding-bottom: 15px;
-
       margin-bottom: 15px;
-
       border-bottom: 1px solid #ddd;
-
     }
-
 
     .wallet {
-
-      font-size: 25px;
-
+      font-size: 24px;
       font-weight: bold;
-
       color: #28a745;
-
       margin-top: 12px;
-
     }
 
 
-    /* ================================
-       MEAL ITEMS
-    ================================= */
+    /* =========================
+       MEAL ITEM
+    ========================= */
 
     .meal-item {
-
       display: flex;
-
+      justify-content: space-between;
       align-items: center;
 
-      justify-content: space-between;
-
       padding: 12px;
-
-      margin-bottom: 8px;
+      margin-bottom: 10px;
 
       border: 1px solid #ddd;
+      border-radius: 10px;
 
+      background: white;
+    }
+
+    .meal-info {
+      flex: 1;
+      padding-right: 10px;
+    }
+
+    .meal-name {
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .meal-price {
+      color: #666;
+      margin-top: 5px;
+    }
+
+
+    /* =========================
+       QUANTITY CONTROL
+    ========================= */
+
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .quantity-button {
+      width: 38px;
+      height: 38px;
+
+      border: none;
       border-radius: 8px;
+
+      font-size: 24px;
+      font-weight: bold;
 
       cursor: pointer;
 
+      background: #e9ecef;
     }
 
-
-    .meal-item:hover {
-
-      background: #f8f9fa;
-
+    .quantity-button:active {
+      transform: scale(0.95);
     }
 
+    .quantity {
+      width: 30px;
+      text-align: center;
 
-    .meal-info {
-
-      flex: 1;
-
-    }
-
-
-    .meal-name {
-
+      font-size: 20px;
       font-weight: bold;
-
-      font-size: 16px;
-
     }
 
 
-    .meal-price {
-
-      color: #666;
-
-      margin-top: 4px;
-
-    }
-
-
-    .meal-checkbox {
-
-      width: 22px;
-
-      height: 22px;
-
-    }
-
-
-    /* ================================
+    /* =========================
        TOTAL
-    ================================= */
+    ========================= */
 
     .total-section {
-
       margin-top: 20px;
-
       padding-top: 15px;
-
       border-top: 1px solid #ddd;
-
     }
-
 
     .total {
-
-      font-size: 22px;
-
+      font-size: 24px;
       font-weight: bold;
-
     }
 
 
-    .proceed-button {
+    /* =========================
+       PROCEED BUTTON
+    ========================= */
 
+    .proceed-button {
       width: 100%;
 
       margin-top: 15px;
-
       padding: 15px;
 
       border: none;
-
       border-radius: 8px;
 
       font-size: 17px;
-
       font-weight: bold;
 
       cursor: pointer;
 
       background: #28a745;
-
       color: white;
-
     }
-
 
     .proceed-button:disabled {
-
       background: #aaa;
-
       cursor: not-allowed;
-
     }
 
 
-    /* ================================
-       CONFIRMATION MODAL
-    ================================= */
+    /* =========================
+       MODAL
+    ========================= */
 
     .modal {
 
@@ -330,11 +250,9 @@
       z-index: 9999;
 
       left: 0;
-
       top: 0;
 
       width: 100%;
-
       height: 100%;
 
       background:
@@ -370,20 +288,11 @@
 
       justify-content: space-between;
 
+      gap: 15px;
+
       padding: 8px 0;
 
       font-size: 17px;
-
-      gap: 15px;
-
-    }
-
-
-    .cash-row {
-
-      font-size: 20px;
-
-      margin-top: 5px;
 
     }
 
@@ -423,8 +332,6 @@
 
       background: #ddd;
 
-      color: #333;
-
     }
 
 
@@ -436,22 +343,6 @@
 
     }
 
-
-    .confirm-button:disabled {
-
-      background: #aaa;
-
-      cursor: not-allowed;
-
-    }
-
-
-    #confirmationMeals {
-
-      line-height: 1.8;
-
-    }
-
   </style>
 
 </head>
@@ -459,59 +350,54 @@
 
 <body>
 
-
   <h1>🍱 Free Lunch Scanner</h1>
 
   <p>Scan Employee QR Code</p>
 
 
-  <!-- QR SCANNER -->
+  <!-- SCANNER -->
 
   <div id="reader"></div>
 
 
   <!-- RESULT -->
 
-  <div
-    id="result"
-    class="info"
-  >
+  <div id="result" class="info">
 
     📷 Starting camera...
 
   </div>
 
 
-  <!-- MEAL SELECTION -->
+  <!-- MEAL SECTION -->
 
   <div id="mealSection">
 
 
-    <div class="employee-card">
+    <!-- EMPLOYEE -->
 
+    <div class="employee-card">
 
       <div
         id="employeeName"
-        class="name"
-      ></div>
+        class="name">
+      </div>
 
 
       <div id="employeeId"></div>
-
 
       <div id="department"></div>
 
 
       <div class="wallet">
 
-        Wallet:
+        Wallet: ₱<span id="walletBalance">
 
-        ₱<span id="walletBalance">
           0.00
+
         </span>
 
       </div>
-
 
     </div>
 
@@ -519,18 +405,23 @@
     <h3>🍽 Select Meal(s)</h3>
 
 
+    <!-- MEALS -->
+
     <div id="mealList"></div>
 
 
-    <div class="total-section">
+    <!-- TOTAL -->
 
+    <div class="total-section">
 
       <div class="total">
 
         Total:
 
         ₱<span id="mealTotal">
+
           0.00
+
         </span>
 
       </div>
@@ -539,28 +430,25 @@
       <button
         id="proceedButton"
         class="proceed-button"
-        disabled
-      >
+        disabled>
 
         PROCEED
 
       </button>
 
-
     </div>
-
 
   </div>
 
 
-  <!-- ================================
-       ORDER CONFIRMATION MODAL
-  ================================= -->
+
+  <!-- =========================
+       CONFIRMATION MODAL
+  ========================== -->
 
   <div
     id="confirmationModal"
-    class="modal"
-  >
+    class="modal">
 
 
     <div class="modal-content">
@@ -585,9 +473,7 @@
 
         <span>Total:</span>
 
-        <strong
-          id="confirmationTotal"
-        >
+        <strong id="confirmationTotal">
 
           ₱0.00
 
@@ -600,9 +486,7 @@
 
         <span>Wallet Balance:</span>
 
-        <strong
-          id="confirmationWallet"
-        >
+        <strong id="confirmationWallet">
 
           ₱0.00
 
@@ -615,9 +499,7 @@
 
         <span>Wallet Used:</span>
 
-        <strong
-          id="confirmationWalletUsed"
-        >
+        <strong id="confirmationWalletUsed">
 
           ₱0.00
 
@@ -628,14 +510,11 @@
 
       <div
         id="confirmationCashRow"
-        class="confirmation-row cash-row"
-      >
+        class="confirmation-row">
 
         <span>Cash Required:</span>
 
-        <strong
-          id="confirmationCash"
-        >
+        <strong id="confirmationCash">
 
           ₱0.00
 
@@ -649,8 +528,7 @@
 
         <button
           id="cancelConfirmButton"
-          class="cancel-button"
-        >
+          class="cancel-button">
 
           CANCEL
 
@@ -659,8 +537,7 @@
 
         <button
           id="confirmButton"
-          class="confirm-button"
-        >
+          class="confirm-button">
 
           CONFIRM ORDER
 
@@ -672,185 +549,249 @@
 
     </div>
 
-
   </div>
+
 
 
   <script>
 
 
-    // =====================================
-    // API URL
-    // =====================================
+// =====================================
+// API URL
+// =====================================
 
-    const API_URL =
-      "https://script.google.com/macros/s/AKfycbw056MlHvMWgKzfm8KWXbhwHGA-qz1MHWsjP1M4wekvHTL64Qfg1PioHsQ601BeBCsr/exec";
-
-
-    // =====================================
-    // VARIABLES
-    // =====================================
-
-    let scanner = null;
-
-    let processing = false;
-
-    let currentEmployee = null;
-
-    let availableMeals = [];
-
-    let pendingMeals = [];
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbw056MlHvMWgKzfm8KWXbhwHGA-qz1MHWsjP1M4wekvHTL64Qfg1PioHsQ601BeBCsr/exec";
 
 
-    // =====================================
-    // SHOW RESULT
-    // =====================================
+// =====================================
+// VARIABLES
+// =====================================
 
-    function showResult(
-      message,
-      type
-    ) {
+let scanner = null;
 
-      const result =
-        document.getElementById(
-          "result"
-        );
+let processing = false;
 
+let currentEmployee = null;
 
-      result.className =
-        type;
+let availableMeals = [];
+
+let mealQuantities = {};
+
+let pendingMeals = [];
 
 
-      result.innerHTML =
-        message;
+// =====================================
+// SHOW RESULT
+// =====================================
 
-    }
+function showResult(message, type) {
 
+  const result =
+    document.getElementById("result");
 
-    // =====================================
-    // JSONP REQUEST
-    // =====================================
+  result.className = type;
 
-    function apiRequest(
-      url,
-      successCallback,
-      errorCallback
-    ) {
+  result.innerHTML = message;
 
-
-      const callbackName =
-        "lunchCallback_" +
-        Date.now() +
-        "_" +
-        Math.floor(
-          Math.random() * 10000
-        );
+}
 
 
-      window[callbackName] =
-        function(response) {
+// =====================================
+// JSONP REQUEST
+// =====================================
 
-          try {
+function apiRequest(
+  url,
+  successCallback,
+  errorCallback
+) {
 
-            successCallback(
-              response
-            );
-
-          }
-
-          finally {
-
-            delete window[
-              callbackName
-            ];
-
-
-            const script =
-              document.getElementById(
-                callbackName
-              );
+  const callbackName =
+    "lunchCallback_" +
+    Date.now() +
+    "_" +
+    Math.floor(
+      Math.random() * 10000
+    );
 
 
-            if (script) {
+  window[callbackName] =
+    function(response) {
 
-              script.remove();
+      try {
 
-            }
+        successCallback(response);
 
-          }
+      }
 
-        };
+      finally {
 
-
-      const script =
-        document.createElement(
-          "script"
-        );
+        delete window[callbackName];
 
 
-      script.id =
-        callbackName;
-
-
-      script.src =
-        url +
-        "&callback=" +
-        encodeURIComponent(
-          callbackName
-        );
-
-
-      script.onerror =
-        function() {
-
-
-          delete window[
+        const script =
+          document.getElementById(
             callbackName
-          ];
+          );
 
+
+        if (script) {
 
           script.remove();
 
+        }
 
-          if (errorCallback) {
+      }
 
-            errorCallback({
-
-              message:
-                "Unable to contact the lunch system."
-
-            });
-
-          }
-
-        };
+    };
 
 
-      document.body.appendChild(
-        script
-      );
-
-    }
+  const script =
+    document.createElement("script");
 
 
-    // =====================================
-    // START SCANNER
-    // =====================================
-
-    function startScanner() {
+  script.id =
+    callbackName;
 
 
-      if (
-        typeof Html5Qrcode ===
-        "undefined"
-      ) {
+  script.src =
+    url +
+    "&callback=" +
+    encodeURIComponent(
+      callbackName
+    );
+
+
+  script.onerror =
+    function() {
+
+      delete window[callbackName];
+
+      script.remove();
+
+
+      if (errorCallback) {
+
+        errorCallback({
+
+          message:
+            "Unable to contact the lunch system."
+
+        });
+
+      }
+
+    };
+
+
+  document.body.appendChild(
+    script
+  );
+
+}
+
+
+// =====================================
+// START SCANNER
+// =====================================
+
+function startScanner() {
+
+  if (
+    typeof Html5Qrcode ===
+    "undefined"
+  ) {
+
+    showResult(
+      "❌ Scanner library failed to load.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  scanner =
+    new Html5Qrcode(
+      "reader"
+    );
+
+
+  scanner.start(
+
+    {
+
+      facingMode:
+        "environment"
+
+    },
+
+
+    {
+
+      fps: 10,
+
+      qrbox: {
+
+        width: 250,
+        height: 250
+
+      },
+
+      aspectRatio: 1.0
+
+    },
+
+
+    function(decodedText) {
+
+
+      if (processing) {
+
+        return;
+
+      }
+
+
+      let employeeId = "";
+
+
+      try {
+
+        const qrUrl =
+          new URL(
+            decodedText
+          );
+
+
+        employeeId =
+          qrUrl.searchParams.get(
+            "claim"
+          ) || "";
+
+      }
+
+      catch (error) {
+
+        employeeId =
+          decodedText;
+
+      }
+
+
+      employeeId =
+        String(employeeId)
+          .trim()
+          .toUpperCase();
+
+
+      if (!employeeId) {
 
         showResult(
-
-          "❌ Scanner library failed to load.",
-
+          "❌ INVALID EMPLOYEE QR",
           "error"
-
         );
 
         return;
@@ -858,1401 +799,1312 @@
       }
 
 
-      scanner =
-        new Html5Qrcode(
-          "reader"
-        );
-
-
-      scanner.start(
-
-        {
-
-          facingMode:
-            "environment"
-
-        },
-
-
-        {
-
-          fps: 10,
-
-          qrbox: {
-
-            width: 250,
-
-            height: 250
-
-          },
-
-          aspectRatio: 1.0
-
-        },
-
-
-        function(decodedText) {
-
-
-          if (processing) {
-
-            return;
-
-          }
-
-
-          let employeeId = "";
-
-
-          // =====================================
-          // EXTRACT EMPLOYEE ID
-          // =====================================
-
-          try {
-
-            const qrUrl =
-              new URL(
-                decodedText
-              );
-
-
-            employeeId =
-              qrUrl.searchParams.get(
-                "claim"
-              ) || "";
-
-          }
-
-
-          catch (error) {
-
-            employeeId =
-              decodedText;
-
-          }
-
-
-          employeeId =
-            String(
-              employeeId
-            )
-            .trim()
-            .toUpperCase();
-
-
-          if (!employeeId) {
-
-            showResult(
-
-              "❌ INVALID EMPLOYEE QR",
-
-              "error"
-
-            );
-
-            return;
-
-          }
-
-
-          processing =
-            true;
-
-
-          showResult(
-
-            "⏳ Checking employee...<br><br>" +
-
-            "<b>" +
-            employeeId +
-            "</b>",
-
-            "info"
-
-          );
-
-
-          getEmployeeData(
-            employeeId
-          );
-
-        },
-
-
-        function(errorMessage) {
-
-          // Ignore normal QR scanning errors
-
-        }
-
-      )
-
-
-      .then(
-        function() {
-
-          showResult(
-
-            "📷 READY — SCAN EMPLOYEE QR",
-
-            "info"
-
-          );
-
-        }
-      )
-
-
-      .catch(
-        function(error) {
-
-          console.error(
-            "CAMERA ERROR:",
-            error
-          );
-
-
-          showResult(
-
-            "❌ CAMERA ERROR<br><br>" +
-            error,
-
-            "error"
-
-          );
-
-        }
-      );
-
-    }
-
-
-    // =====================================
-    // GET EMPLOYEE DATA
-    // =====================================
-
-    function getEmployeeData(
-      employeeId
-    ) {
-
-
-      const url =
-        API_URL +
-        "?action=employeeData" +
-        "&employeeId=" +
-        encodeURIComponent(
-          employeeId
-        );
-
-
-      apiRequest(
-
-        url,
-
-
-        function(response) {
-
-          handleEmployeeData(
-            response
-          );
-
-        },
-
-
-        function(error) {
-
-          handleError(
-            error
-          );
-
-        }
-
-      );
-
-    }
-
-
-    // =====================================
-    // HANDLE EMPLOYEE DATA
-    // =====================================
-
-    function handleEmployeeData(
-      response
-    ) {
-
-
-      console.log(
-        "EMPLOYEE DATA:",
-        response
-      );
-
-
-      if (
-        response.status ===
-        "SUCCESS"
-      ) {
-
-
-        currentEmployee =
-          response.employee;
-
-
-        availableMeals =
-          response.meals || [];
-
-
-        // =====================================
-        // EMPLOYEE INFO
-        // =====================================
-
-        document.getElementById(
-          "employeeName"
-        ).innerText =
-          response.employee.name;
-
-
-        document.getElementById(
-          "employeeId"
-        ).innerText =
-          response.employee.employeeId;
-
-
-        document.getElementById(
-          "department"
-        ).innerText =
-          response.employee.department;
-
-
-        // =====================================
-        // WALLET BALANCE
-        // =====================================
-
-        const remainingBalance =
-          Number(
-            response.wallet.remainingBalance
-          ) || 0;
-
-
-        document.getElementById(
-          "walletBalance"
-        ).innerText =
-          remainingBalance.toFixed(2);
-
-
-        // =====================================
-        // WALLET FULLY CONSUMED
-        // =====================================
-
-        if (
-          remainingBalance <= 0
-        ) {
-
-
-          document.getElementById(
-            "mealSection"
-          ).style.display =
-            "none";
-
-
-          showResult(
-
-            "🔴" +
-
-            "<div class='status'>" +
-            "WALLET FULLY CONSUMED" +
-            "</div>" +
-
-            "<div class='name'>" +
-            response.employee.name +
-            "</div>" +
-
-            "<br>" +
-
-            "<div>" +
-            "Today's lunch wallet has already been used." +
-            "</div>" +
-
-            "<br>" +
-
-            "<div>" +
-            "Remaining Balance: <b>₱0.00</b>" +
-            "</div>",
-
-            "error"
-
-          );
-
-
-          setTimeout(
-
-            resetForNextEmployee,
-
-            4000
-
-          );
-
-
-          return;
-
-        }
-
-
-        // =====================================
-        // RENDER MEALS
-        // =====================================
-
-        renderMeals();
-
-
-        document.getElementById(
-          "mealSection"
-        ).style.display =
-          "block";
-
-
-        showResult(
-
-          "✅ EMPLOYEE VERIFIED<br>" +
-          "Select meal(s).",
-
-          "success"
-
-        );
-
-      }
-
-
-      else {
-
-
-        document.getElementById(
-          "mealSection"
-        ).style.display =
-          "none";
-
-
-        if (
-          response.status ===
-          "NOT_FOUND"
-        ) {
-
-          showResult(
-
-            "❌ EMPLOYEE NOT FOUND",
-
-            "error"
-
-          );
-
-        }
-
-
-        else if (
-          response.status ===
-          "NOT_ELIGIBLE"
-        ) {
-
-          showResult(
-
-            "🔴 NOT ELIGIBLE<br><br>" +
-
-            (
-              response.name ||
-              "Employee"
-            ),
-
-            "error"
-
-          );
-
-        }
-
-
-        else {
-
-          showResult(
-
-            "⚠️ SYSTEM ERROR<br><br>" +
-
-            (
-              response.message ||
-              "Unable to retrieve employee."
-            ),
-
-            "error"
-
-          );
-
-        }
-
-
-        setTimeout(
-
-          resetForNextEmployee,
-
-          3000
-
-        );
-
-      }
-
-    }
-
-
-    // =====================================
-    // RENDER MEALS
-    // =====================================
-
-    function renderMeals() {
-
-
-      const mealList =
-        document.getElementById(
-          "mealList"
-        );
-
-
-      mealList.innerHTML =
-        "";
-
-
-      document.getElementById(
-        "mealTotal"
-      ).innerText =
-        "0.00";
-
-
-      document.getElementById(
-        "proceedButton"
-      ).disabled =
-        true;
-
-
-      if (
-        availableMeals.length === 0
-      ) {
-
-        mealList.innerHTML =
-          "<p>No meals available.</p>";
-
-        return;
-
-      }
-
-
-      availableMeals.forEach(
-        function(meal) {
-
-
-          const mealItem =
-            document.createElement(
-              "label"
-            );
-
-
-          mealItem.className =
-            "meal-item";
-
-
-          mealItem.innerHTML =
-
-            "<div class='meal-info'>" +
-
-              "<div class='meal-name'>" +
-              meal.name +
-              "</div>" +
-
-              "<div class='meal-price'>" +
-
-                "₱" +
-
-                Number(
-                  meal.price
-                ).toFixed(2) +
-
-              "</div>" +
-
-            "</div>" +
-
-
-            "<input " +
-
-              "type='checkbox' " +
-
-              "class='meal-checkbox' " +
-
-              "data-id='" +
-              meal.mealId +
-              "' " +
-
-              "data-price='" +
-              meal.price +
-              "'>";
-
-
-
-          mealList.appendChild(
-            mealItem
-          );
-
-        }
-
-      );
-
-
-      const checkboxes =
-        document.querySelectorAll(
-          ".meal-checkbox"
-        );
-
-
-      checkboxes.forEach(
-        function(checkbox) {
-
-          checkbox.addEventListener(
-
-            "change",
-
-            updateTotal
-
-          );
-
-        }
-
-      );
-
-    }
-
-
-    // =====================================
-    // UPDATE TOTAL
-    // =====================================
-
-    function updateTotal() {
-
-
-      let total = 0;
-
-      let selectedCount = 0;
-
-
-      document
-        .querySelectorAll(
-          ".meal-checkbox:checked"
-        )
-        .forEach(
-          function(checkbox) {
-
-
-            total +=
-              Number(
-                checkbox.dataset.price
-              );
-
-
-            selectedCount++;
-
-          }
-        );
-
-
-      document.getElementById(
-        "mealTotal"
-      ).innerText =
-        total.toFixed(2);
-
-
-      document.getElementById(
-        "proceedButton"
-      ).disabled =
-        selectedCount === 0;
-
-    }
-
-
-    // =====================================
-    // SHOW ORDER CONFIRMATION
-    // =====================================
-
-    function showOrderConfirmation() {
-
-
-      if (
-        !currentEmployee
-      ) {
-
-        return;
-
-      }
-
-
-      const selectedMeals = [];
-
-
-      document
-        .querySelectorAll(
-          ".meal-checkbox:checked"
-        )
-        .forEach(
-          function(checkbox) {
-
-
-            const meal =
-              availableMeals.find(
-                function(item) {
-
-                  return (
-                    item.mealId ===
-                    checkbox.dataset.id
-                  );
-
-                }
-              );
-
-
-            if (meal) {
-
-              selectedMeals.push(
-                meal
-              );
-
-            }
-
-          }
-        );
-
-
-      if (
-        selectedMeals.length === 0
-      ) {
-
-        return;
-
-      }
-
-
-      // =====================================
-      // CALCULATE TOTAL
-      // =====================================
-
-      let totalAmount = 0;
-
-
-      selectedMeals.forEach(
-        function(meal) {
-
-          totalAmount +=
-            Number(
-              meal.price
-            ) || 0;
-
-        }
-      );
-
-
-      // =====================================
-      // WALLET CALCULATION
-      // =====================================
-
-      const walletBalance =
-        Number(
-          document.getElementById(
-            "walletBalance"
-          ).innerText
-        ) || 0;
-
-
-      const walletUsed =
-        Math.min(
-          walletBalance,
-          totalAmount
-        );
-
-
-      const cashRequired =
-        Math.max(
-          totalAmount -
-          walletUsed,
-          0
-        );
-
-
-      // =====================================
-      // EMPLOYEE INFO
-      // =====================================
-
-      document.getElementById(
-        "confirmationEmployee"
-      ).innerHTML =
-
-        "<strong>" +
-        currentEmployee.name +
-        "</strong><br>" +
-
-        currentEmployee.employeeId;
-
-
-      // =====================================
-      // SELECTED MEALS
-      // =====================================
-
-      let mealsHtml = "";
-
-
-      selectedMeals.forEach(
-        function(meal) {
-
-
-          mealsHtml +=
-
-            "<div class='confirmation-row'>" +
-
-              "<span>" +
-              meal.name +
-              "</span>" +
-
-              "<strong>" +
-
-                "₱" +
-
-                Number(
-                  meal.price
-                ).toFixed(2) +
-
-              "</strong>" +
-
-            "</div>";
-
-        }
-      );
-
-
-      document.getElementById(
-        "confirmationMeals"
-      ).innerHTML =
-        mealsHtml;
-
-
-      // =====================================
-      // PAYMENT SUMMARY
-      // =====================================
-
-      document.getElementById(
-        "confirmationTotal"
-      ).innerText =
-
-        "₱" +
-        totalAmount.toFixed(2);
-
-
-      document.getElementById(
-        "confirmationWallet"
-      ).innerText =
-
-        "₱" +
-        walletBalance.toFixed(2);
-
-
-      document.getElementById(
-        "confirmationWalletUsed"
-      ).innerText =
-
-        "₱" +
-        walletUsed.toFixed(2);
-
-
-      document.getElementById(
-        "confirmationCash"
-      ).innerText =
-
-        "₱" +
-        cashRequired.toFixed(2);
-
-
-      // =====================================
-      // SHOW / HIDE CASH
-      // =====================================
-
-      document.getElementById(
-        "confirmationCashRow"
-      ).style.display =
-
-        cashRequired > 0
-          ? "flex"
-          : "none";
-
-
-      // =====================================
-      // SAVE PENDING ORDER
-      // =====================================
-
-      pendingMeals =
-        selectedMeals;
-
-
-      // =====================================
-      // SHOW MODAL
-      // =====================================
-
-      document.getElementById(
-        "confirmationModal"
-      ).style.display =
-        "block";
-
-    }
-
-
-    // =====================================
-    // PROCEED BUTTON
-    // =====================================
-
-    document.getElementById(
-      "proceedButton"
-    ).addEventListener(
-
-      "click",
-
-      function() {
-
-        showOrderConfirmation();
-
-      }
-
-    );
-
-
-    // =====================================
-    // CANCEL ORDER
-    // =====================================
-
-    document.getElementById(
-      "cancelConfirmButton"
-    ).addEventListener(
-
-      "click",
-
-      function() {
-
-
-        document.getElementById(
-          "confirmationModal"
-        ).style.display =
-          "none";
-
-
-        pendingMeals =
-          [];
-
-
-        // Babalik sa meal selection.
-        // Hindi mawawala ang selected meals.
-
-      }
-
-    );
-
-
-    // =====================================
-    // CONFIRM ORDER
-    // =====================================
-
-    document.getElementById(
-      "confirmButton"
-    ).addEventListener(
-
-      "click",
-
-      function() {
-
-
-        if (
-
-          !currentEmployee ||
-
-          !pendingMeals ||
-
-          pendingMeals.length === 0
-
-        ) {
-
-          return;
-
-        }
-
-
-        // Prevent duplicate transaction
-
-        document.getElementById(
-          "confirmButton"
-        ).disabled =
-          true;
-
-
-        document.getElementById(
-          "cancelConfirmButton"
-        ).disabled =
-          true;
-
-
-        document.getElementById(
-          "confirmButton"
-        ).innerText =
-          "PROCESSING...";
-
-
-        processTransaction(
-
-          currentEmployee.employeeId,
-
-          pendingMeals
-
-        );
-
-      }
-
-    );
-
-
-    // =====================================
-    // PROCESS TRANSACTION
-    // =====================================
-
-    function processTransaction(
-      employeeId,
-      selectedMeals
-    ) {
-
-
-      const url =
-        API_URL +
-
-        "?action=transaction" +
-
-        "&employeeId=" +
-
-        encodeURIComponent(
-          employeeId
-        ) +
-
-        "&meals=" +
-
-        encodeURIComponent(
-
-          JSON.stringify(
-            selectedMeals
-          )
-
-        );
-
-
-      apiRequest(
-
-        url,
-
-
-        function(response) {
-
-          handleTransactionResult(
-            response
-          );
-
-        },
-
-
-        function(error) {
-
-          handleTransactionError(
-            error
-          );
-
-        }
-
-      );
-
-    }
-
-
-    // =====================================
-    // TRANSACTION RESULT
-    // =====================================
-
-    function handleTransactionResult(
-      response
-    ) {
-
-
-      // Close modal
-
-      document.getElementById(
-        "confirmationModal"
-      ).style.display =
-        "none";
-
-
-      // Reset confirmation buttons
-
-      document.getElementById(
-        "confirmButton"
-      ).disabled =
-        false;
-
-
-      document.getElementById(
-        "cancelConfirmButton"
-      ).disabled =
-        false;
-
-
-      document.getElementById(
-        "confirmButton"
-      ).innerText =
-        "CONFIRM ORDER";
-
-
-      if (
-        response.status !==
-        "SUCCESS"
-      ) {
-
-
-        showResult(
-
-          "⚠️ SYSTEM ERROR<br><br>" +
-
-          (
-            response.message ||
-            "Unable to process transaction."
-          ),
-
-          "error"
-
-        );
-
-
-        setTimeout(
-
-          resetForNextEmployee,
-
-          3000
-
-        );
-
-
-        return;
-
-      }
-
-
-      let paymentMessage = "";
-
-
-      if (
-
-        Number(
-          response.cashRequired
-        ) === 0
-
-      ) {
-
-
-        paymentMessage =
-          "💳 Paid using Wallet";
-
-
-      }
-
-
-      else {
-
-
-        paymentMessage =
-
-          "💳 Wallet Used: ₱" +
-
-          Number(
-            response.walletUsed
-          ).toFixed(2) +
-
-
-          "<br><br>" +
-
-
-          "💵 Cash Required: <b>₱" +
-
-          Number(
-            response.cashRequired
-          ).toFixed(2) +
-
-          "</b>";
-
-      }
+      processing = true;
 
 
       showResult(
 
-        "🟢" +
-
-        "<div class='status'>" +
-        "TRANSACTION COMPLETE" +
-        "</div>" +
-
-
-        "<div class='name'>" +
-
-        response.employee.name +
-
-        "</div>" +
-
-
-        "<br>" +
-
-
-        "<div>" +
-
-        "Total: ₱" +
-
-        Number(
-          response.totalAmount
-        ).toFixed(2) +
-
-        "</div>" +
-
-
-        "<br>" +
-
-
-        "<div>" +
-
-        paymentMessage +
-
-        "</div>" +
-
-
-        "<br>" +
-
-
-        "<div>" +
-
-        "Remaining Wallet: <b>₱" +
-
-        Number(
-          response.remainingBalance
-        ).toFixed(2) +
-
-        "</b></div>",
-
-
-        "success"
-
-      );
-
-
-      document.getElementById(
-        "mealSection"
-      ).style.display =
-        "none";
-
-
-      pendingMeals =
-        [];
-
-
-      setTimeout(
-
-        resetForNextEmployee,
-
-        5000
-
-      );
-
-    }
-
-
-    // =====================================
-    // TRANSACTION ERROR
-    // =====================================
-
-    function handleTransactionError(
-      error
-    ) {
-
-
-      document.getElementById(
-        "confirmButton"
-      ).disabled =
-        false;
-
-
-      document.getElementById(
-        "cancelConfirmButton"
-      ).disabled =
-        false;
-
-
-      document.getElementById(
-        "confirmButton"
-      ).innerText =
-        "CONFIRM ORDER";
-
-
-      showResult(
-
-        "⚠️ SYSTEM ERROR<br><br>" +
-
-        (
-          error.message ||
-          "Unable to process transaction."
-        ),
-
-        "error"
-
-      );
-
-    }
-
-
-    // =====================================
-    // GENERAL ERROR
-    // =====================================
-
-    function handleError(
-      error
-    ) {
-
-
-      document.getElementById(
-        "mealSection"
-      ).style.display =
-        "none";
-
-
-      showResult(
-
-        "⚠️ SYSTEM ERROR<br><br>" +
-
-        (
-          error.message ||
-          "Unable to retrieve employee."
-        ),
-
-        "error"
-
-      );
-
-
-      setTimeout(
-
-        resetForNextEmployee,
-
-        3000
-
-      );
-
-    }
-
-
-    // =====================================
-    // RESET SYSTEM
-    // =====================================
-
-    function resetForNextEmployee() {
-
-
-      currentEmployee =
-        null;
-
-
-      availableMeals =
-        [];
-
-
-      pendingMeals =
-        [];
-
-
-      document.getElementById(
-        "mealSection"
-      ).style.display =
-        "none";
-
-
-      document.getElementById(
-        "confirmationModal"
-      ).style.display =
-        "none";
-
-
-      document.getElementById(
-        "mealList"
-      ).innerHTML =
-        "";
-
-
-      document.getElementById(
-        "mealTotal"
-      ).innerText =
-        "0.00";
-
-
-      document.getElementById(
-        "walletBalance"
-      ).innerText =
-        "0.00";
-
-
-      document.getElementById(
-        "proceedButton"
-      ).disabled =
-        true;
-
-
-      document.getElementById(
-        "confirmButton"
-      ).disabled =
-        false;
-
-
-      document.getElementById(
-        "cancelConfirmButton"
-      ).disabled =
-        false;
-
-
-      document.getElementById(
-        "confirmButton"
-      ).innerText =
-        "CONFIRM ORDER";
-
-
-      processing =
-        false;
-
-
-      showResult(
-
-        "📷 READY — SCAN NEXT EMPLOYEE",
+        "⏳ Checking employee...<br><br>" +
+        "<b>" +
+        employeeId +
+        "</b>",
 
         "info"
 
       );
 
+
+      getEmployeeData(
+        employeeId
+      );
+
+    },
+
+
+    function(errorMessage) {
+
+      // Ignore normal scanning errors
+
+    }
+
+  )
+
+
+  .then(function() {
+
+    showResult(
+      "📷 READY — SCAN EMPLOYEE QR",
+      "info"
+    );
+
+  })
+
+
+  .catch(function(error) {
+
+    console.error(error);
+
+    showResult(
+
+      "❌ CAMERA ERROR<br><br>" +
+      error,
+
+      "error"
+
+    );
+
+  });
+
+}
+
+
+// =====================================
+// GET EMPLOYEE DATA
+// =====================================
+
+function getEmployeeData(
+  employeeId
+) {
+
+  const url =
+    API_URL +
+    "?action=employeeData" +
+    "&employeeId=" +
+    encodeURIComponent(
+      employeeId
+    );
+
+
+  apiRequest(
+
+    url,
+
+
+    function(response) {
+
+      handleEmployeeData(
+        response
+      );
+
+    },
+
+
+    function(error) {
+
+      handleError(
+        error
+      );
+
+    }
+
+  );
+
+}
+
+
+// =====================================
+// HANDLE EMPLOYEE DATA
+// =====================================
+
+function handleEmployeeData(
+  response
+) {
+
+  console.log(
+    "EMPLOYEE DATA:",
+    response
+  );
+
+
+  if (
+    response.status !==
+    "SUCCESS"
+  ) {
+
+    showResult(
+
+      "❌ EMPLOYEE NOT FOUND",
+
+      "error"
+
+    );
+
+
+    setTimeout(
+      resetForNextEmployee,
+      3000
+    );
+
+    return;
+
+  }
+
+
+  currentEmployee =
+    response.employee;
+
+
+  availableMeals =
+    response.meals || [];
+
+
+  mealQuantities =
+    {};
+
+
+  // =====================================
+  // EMPLOYEE INFO
+  // =====================================
+
+  document.getElementById(
+    "employeeName"
+  ).innerText =
+    currentEmployee.name;
+
+
+  document.getElementById(
+    "employeeId"
+  ).innerText =
+    currentEmployee.employeeId;
+
+
+  document.getElementById(
+    "department"
+  ).innerText =
+    currentEmployee.department;
+
+
+  // =====================================
+  // WALLET
+  // =====================================
+
+  const remainingBalance =
+    Number(
+      response.wallet.remainingBalance
+    ) || 0;
+
+
+  document.getElementById(
+    "walletBalance"
+  ).innerText =
+    remainingBalance.toFixed(2);
+
+
+  // =====================================
+  // WALLET FULLY CONSUMED
+  // =====================================
+
+  if (
+    remainingBalance <= 0
+  ) {
+
+    document.getElementById(
+      "mealSection"
+    ).style.display =
+      "none";
+
+
+    showResult(
+
+      "🔴" +
+
+      "<div class='status'>" +
+      "WALLET FULLY CONSUMED" +
+      "</div>" +
+
+      "<div class='name'>" +
+      currentEmployee.name +
+      "</div>" +
+
+      "<br>" +
+
+      "<div>" +
+      "Today's lunch wallet has already been used." +
+      "</div>" +
+
+      "<br>" +
+
+      "<div>" +
+      "Remaining Balance: <b>₱0.00</b>" +
+      "</div>",
+
+      "error"
+
+    );
+
+
+    setTimeout(
+      resetForNextEmployee,
+      4000
+    );
+
+
+    return;
+
+  }
+
+
+  // =====================================
+  // RENDER MEALS
+  // =====================================
+
+  renderMeals();
+
+
+  document.getElementById(
+    "mealSection"
+  ).style.display =
+    "block";
+
+
+  showResult(
+
+    "✅ EMPLOYEE VERIFIED<br>" +
+    "Select meal(s).",
+
+    "success"
+
+  );
+
+}
+
+
+// =====================================
+// RENDER MEALS
+// =====================================
+
+function renderMeals() {
+
+  const mealList =
+    document.getElementById(
+      "mealList"
+    );
+
+
+  mealList.innerHTML =
+    "";
+
+
+  availableMeals.forEach(
+    function(meal) {
+
+
+      mealQuantities[
+        meal.mealId
+      ] = 0;
+
+
+      const mealItem =
+        document.createElement(
+          "div"
+        );
+
+
+      mealItem.className =
+        "meal-item";
+
+
+      mealItem.innerHTML =
+
+        "<div class='meal-info'>" +
+
+          "<div class='meal-name'>" +
+
+            meal.name +
+
+          "</div>" +
+
+
+          "<div class='meal-price'>" +
+
+            "₱" +
+
+            Number(
+              meal.price
+            ).toFixed(2) +
+
+          "</div>" +
+
+        "</div>" +
+
+
+        "<div class='quantity-control'>" +
+
+
+          "<button " +
+
+            "class='quantity-button decrease-button' " +
+
+            "data-id='" +
+
+            meal.mealId +
+
+            "'>" +
+
+            "−" +
+
+          "</button>" +
+
+
+          "<div " +
+
+            "class='quantity' " +
+
+            "id='qty-" +
+
+            meal.mealId +
+
+            "'>" +
+
+            "0" +
+
+          "</div>" +
+
+
+          "<button " +
+
+            "class='quantity-button increase-button' " +
+
+            "data-id='" +
+
+            meal.mealId +
+
+            "'>" +
+
+            "+" +
+
+          "</button>" +
+
+
+        "</div>";
+
+
+      mealList.appendChild(
+        mealItem
+      );
+
+    }
+
+  );
+
+
+  // =====================================
+  // PLUS BUTTON
+  // =====================================
+
+  document
+    .querySelectorAll(
+      ".increase-button"
+    )
+    .forEach(
+      function(button) {
+
+        button.addEventListener(
+
+          "click",
+
+          function() {
+
+            const mealId =
+              button.dataset.id;
+
+
+            mealQuantities[
+              mealId
+            ]++;
+
+
+            updateQuantityDisplay(
+              mealId
+            );
+
+
+            updateTotal();
+
+          }
+
+        );
+
+      }
+
+    );
+
+
+  // =====================================
+  // MINUS BUTTON
+  // =====================================
+
+  document
+    .querySelectorAll(
+      ".decrease-button"
+    )
+    .forEach(
+      function(button) {
+
+        button.addEventListener(
+
+          "click",
+
+          function() {
+
+            const mealId =
+              button.dataset.id;
+
+
+            if (
+              mealQuantities[
+                mealId
+              ] > 0
+            ) {
+
+              mealQuantities[
+                mealId
+              ]--;
+
+            }
+
+
+            updateQuantityDisplay(
+              mealId
+            );
+
+
+            updateTotal();
+
+          }
+
+        );
+
+      }
+
+    );
+
+
+  updateTotal();
+
+}
+
+
+// =====================================
+// UPDATE QUANTITY DISPLAY
+// =====================================
+
+function updateQuantityDisplay(
+  mealId
+) {
+
+  const quantityElement =
+    document.getElementById(
+      "qty-" +
+      mealId
+    );
+
+
+  if (
+    quantityElement
+  ) {
+
+    quantityElement.innerText =
+      mealQuantities[
+        mealId
+      ];
+
+  }
+
+}
+
+
+// =====================================
+// UPDATE TOTAL
+// =====================================
+
+function updateTotal() {
+
+  let total = 0;
+
+  let selectedCount = 0;
+
+
+  availableMeals.forEach(
+    function(meal) {
+
+      const quantity =
+        Number(
+          mealQuantities[
+            meal.mealId
+          ]
+        ) || 0;
+
+
+      if (
+        quantity > 0
+      ) {
+
+        total +=
+
+          Number(
+            meal.price
+          ) *
+
+          quantity;
+
+
+        selectedCount +=
+          quantity;
+
+      }
+
+    }
+
+  );
+
+
+  document.getElementById(
+    "mealTotal"
+  ).innerText =
+    total.toFixed(2);
+
+
+  document.getElementById(
+    "proceedButton"
+  ).disabled =
+    selectedCount === 0;
+
+}
+
+
+// =====================================
+// PROCEED BUTTON
+// =====================================
+
+document.getElementById(
+  "proceedButton"
+).addEventListener(
+
+  "click",
+
+  function() {
+
+    if (!currentEmployee) {
+
+      return;
+
+    }
+
+
+    pendingMeals = [];
+
+
+    availableMeals.forEach(
+      function(meal) {
+
+        const quantity =
+          Number(
+            mealQuantities[
+              meal.mealId
+            ]
+          ) || 0;
+
+
+        if (
+          quantity > 0
+        ) {
+
+          pendingMeals.push({
+
+            mealId:
+              meal.mealId,
+
+            name:
+              meal.name,
+
+            price:
+              Number(
+                meal.price
+              ),
+
+            quantity:
+              quantity
+
+          });
+
+        }
+
+      }
+
+    );
+
+
+    if (
+      pendingMeals.length === 0
+    ) {
+
+      return;
+
     }
 
 
     // =====================================
-    // START SYSTEM
+    // CALCULATE TOTAL
     // =====================================
 
-    window.onload =
-      function() {
+    let totalAmount = 0;
 
-        startScanner();
 
-      };
+    pendingMeals.forEach(
+      function(meal) {
+
+        totalAmount +=
+
+          Number(
+            meal.price
+          ) *
+
+          Number(
+            meal.quantity
+          );
+
+      }
+
+    );
+
+
+    // =====================================
+    // WALLET
+    // =====================================
+
+    const walletBalance =
+      Number(
+        document.getElementById(
+          "walletBalance"
+        ).innerText
+      ) || 0;
+
+
+    const walletUsed =
+      Math.min(
+        walletBalance,
+        totalAmount
+      );
+
+
+    const cashRequired =
+      Math.max(
+        totalAmount -
+        walletUsed,
+        0
+      );
+
+
+    // =====================================
+    // EMPLOYEE
+    // =====================================
+
+    document.getElementById(
+      "confirmationEmployee"
+    ).innerHTML =
+
+      "<strong>" +
+
+      currentEmployee.name +
+
+      "</strong><br>" +
+
+      currentEmployee.employeeId;
+
+
+    // =====================================
+    // SELECTED MEALS
+    // =====================================
+
+    let mealsHtml = "";
+
+
+    pendingMeals.forEach(
+      function(meal) {
+
+        const subtotal =
+
+          Number(
+            meal.price
+          ) *
+
+          Number(
+            meal.quantity
+          );
+
+
+        mealsHtml +=
+
+          "<div class='confirmation-row'>" +
+
+            "<span>" +
+
+              meal.name +
+
+              " × " +
+
+              meal.quantity +
+
+            "</span>" +
+
+
+            "<strong>" +
+
+              "₱" +
+
+              subtotal.toFixed(2) +
+
+            "</strong>" +
+
+          "</div>";
+
+      }
+
+    );
+
+
+    document.getElementById(
+      "confirmationMeals"
+    ).innerHTML =
+      mealsHtml;
+
+
+    // =====================================
+    // PAYMENT SUMMARY
+    // =====================================
+
+    document.getElementById(
+      "confirmationTotal"
+    ).innerText =
+
+      "₱" +
+
+      totalAmount.toFixed(2);
+
+
+    document.getElementById(
+      "confirmationWallet"
+    ).innerText =
+
+      "₱" +
+
+      walletBalance.toFixed(2);
+
+
+    document.getElementById(
+      "confirmationWalletUsed"
+    ).innerText =
+
+      "₱" +
+
+      walletUsed.toFixed(2);
+
+
+    document.getElementById(
+      "confirmationCash"
+    ).innerText =
+
+      "₱" +
+
+      cashRequired.toFixed(2);
+
+
+    // =====================================
+    // CASH DISPLAY
+    // =====================================
+
+    document.getElementById(
+      "confirmationCashRow"
+    ).style.display =
+
+      cashRequired > 0
+
+        ? "flex"
+
+        : "none";
+
+
+    // =====================================
+    // SHOW MODAL
+    // =====================================
+
+    document.getElementById(
+      "confirmationModal"
+    ).style.display =
+      "block";
+
+  }
+
+);
+
+
+// =====================================
+// CANCEL ORDER
+// =====================================
+
+document.getElementById(
+  "cancelConfirmButton"
+).addEventListener(
+
+  "click",
+
+  function() {
+
+    document.getElementById(
+      "confirmationModal"
+    ).style.display =
+      "none";
+
+
+    pendingMeals =
+      [];
+
+  }
+
+);
+
+
+// =====================================
+// CONFIRM ORDER
+// =====================================
+
+document.getElementById(
+  "confirmButton"
+).addEventListener(
+
+  "click",
+
+  function() {
+
+
+    if (
+      !currentEmployee ||
+      pendingMeals.length === 0
+    ) {
+
+      return;
+
+    }
+
+
+    document.getElementById(
+      "confirmButton"
+    ).disabled =
+      true;
+
+
+    document.getElementById(
+      "confirmButton"
+    ).innerText =
+      "PROCESSING...";
+
+
+    processTransaction(
+
+      currentEmployee.employeeId,
+
+      pendingMeals
+
+    );
+
+  }
+
+);
+
+
+// =====================================
+// PROCESS TRANSACTION
+// =====================================
+
+function processTransaction(
+  employeeId,
+  selectedMeals
+) {
+
+  const url =
+
+    API_URL +
+
+    "?action=transaction" +
+
+
+    "&employeeId=" +
+
+    encodeURIComponent(
+      employeeId
+    ) +
+
+
+    "&meals=" +
+
+    encodeURIComponent(
+
+      JSON.stringify(
+        selectedMeals
+      )
+
+    );
+
+
+  apiRequest(
+
+    url,
+
+
+    function(response) {
+
+      handleTransactionResult(
+        response
+      );
+
+    },
+
+
+    function(error) {
+
+      handleTransactionError(
+        error
+      );
+
+    }
+
+  );
+
+}
+
+
+// =====================================
+// TRANSACTION RESULT
+// =====================================
+
+function handleTransactionResult(
+  response
+) {
+
+
+  document.getElementById(
+    "confirmationModal"
+  ).style.display =
+    "none";
+
+
+  if (
+    response.status !==
+    "SUCCESS"
+  ) {
+
+    showResult(
+
+      "⚠️ SYSTEM ERROR<br><br>" +
+
+      (
+        response.message ||
+        "Unable to process transaction."
+      ),
+
+      "error"
+
+    );
+
+
+    setTimeout(
+      resetForNextEmployee,
+      3000
+    );
+
+
+    return;
+
+  }
+
+
+  let paymentMessage = "";
+
+
+  if (
+    Number(
+      response.cashRequired
+    ) === 0
+  ) {
+
+    paymentMessage =
+      "💳 Paid using Wallet";
+
+  }
+
+  else {
+
+    paymentMessage =
+
+      "💳 Wallet Used: ₱" +
+
+      Number(
+        response.walletUsed
+      ).toFixed(2) +
+
+
+      "<br><br>" +
+
+
+      "💵 Cash Required: <b>₱" +
+
+      Number(
+        response.cashRequired
+      ).toFixed(2) +
+
+      "</b>";
+
+  }
+
+
+  showResult(
+
+    "🟢" +
+
+    "<div class='status'>" +
+
+      "TRANSACTION COMPLETE" +
+
+    "</div>" +
+
+
+    "<div class='name'>" +
+
+      response.employee.name +
+
+    "</div>" +
+
+
+    "<br>" +
+
+
+    "<div>" +
+
+      "Total: ₱" +
+
+      Number(
+        response.totalAmount
+      ).toFixed(2) +
+
+    "</div>" +
+
+
+    "<br>" +
+
+
+    "<div>" +
+
+      paymentMessage +
+
+    "</div>" +
+
+
+    "<br>" +
+
+
+    "<div>" +
+
+      "Remaining Wallet: <b>₱" +
+
+      Number(
+        response.remainingBalance
+      ).toFixed(2) +
+
+      "</b>" +
+
+    "</div>",
+
+
+    "success"
+
+  );
+
+
+  document.getElementById(
+    "mealSection"
+  ).style.display =
+    "none";
+
+
+  setTimeout(
+    resetForNextEmployee,
+    5000
+  );
+
+}
+
+
+// =====================================
+// TRANSACTION ERROR
+// =====================================
+
+function handleTransactionError(
+  error
+) {
+
+  document.getElementById(
+    "confirmationModal"
+  ).style.display =
+    "none";
+
+
+  showResult(
+
+    "⚠️ SYSTEM ERROR<br><br>" +
+
+    (
+      error.message ||
+      "Unable to process transaction."
+    ),
+
+    "error"
+
+  );
+
+
+  document.getElementById(
+    "confirmButton"
+  ).disabled =
+    false;
+
+
+  document.getElementById(
+    "confirmButton"
+  ).innerText =
+    "CONFIRM ORDER";
+
+}
+
+
+// =====================================
+// GENERAL ERROR
+// =====================================
+
+function handleError(
+  error
+) {
+
+  document.getElementById(
+    "mealSection"
+  ).style.display =
+    "none";
+
+
+  showResult(
+
+    "⚠️ SYSTEM ERROR<br><br>" +
+
+    (
+      error.message ||
+      "Unable to retrieve employee."
+    ),
+
+    "error"
+
+  );
+
+
+  setTimeout(
+    resetForNextEmployee,
+    3000
+  );
+
+}
+
+
+// =====================================
+// RESET
+// =====================================
+
+function resetForNextEmployee() {
+
+  currentEmployee =
+    null;
+
+
+  availableMeals =
+    [];
+
+
+  mealQuantities =
+    {};
+
+
+  pendingMeals =
+    [];
+
+
+  document.getElementById(
+    "mealSection"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "confirmationModal"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "mealList"
+  ).innerHTML =
+    "";
+
+
+  document.getElementById(
+    "mealTotal"
+  ).innerText =
+    "0.00";
+
+
+  document.getElementById(
+    "proceedButton"
+  ).disabled =
+    true;
+
+
+  document.getElementById(
+    "confirmButton"
+  ).disabled =
+    false;
+
+
+  document.getElementById(
+    "confirmButton"
+  ).innerText =
+    "CONFIRM ORDER";
+
+
+  processing =
+    false;
+
+
+  showResult(
+
+    "📷 READY — SCAN NEXT EMPLOYEE",
+
+    "info"
+
+  );
+
+}
+
+
+// =====================================
+// START
+// =====================================
+
+window.onload =
+  function() {
+
+    startScanner();
+
+  };
 
 
   </script>
-
 
 </body>
 </html>
