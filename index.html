@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
+
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>Free Lunch Scanner</title>
 
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script
+    src="https://unpkg.com/html5-qrcode"
+    type="text/javascript">
+  </script>
 
   <style>
+
     body {
       font-family: Arial, sans-serif;
       text-align: center;
@@ -29,15 +35,26 @@
       box-sizing: border-box;
     }
 
-    #result {
+    #result,
+    #mealSection {
+      width: 100%;
       max-width: 450px;
       margin: 20px auto;
       padding: 20px;
       border-radius: 12px;
-      background: #fff3cd;
-      color: #856404;
-      font-size: 20px;
       box-sizing: border-box;
+    }
+
+    #result {
+      background: white;
+      font-size: 20px;
+      min-height: 80px;
+    }
+
+    #mealSection {
+      background: white;
+      text-align: left;
+      display: none;
     }
 
     .success {
@@ -56,75 +73,184 @@
     }
 
     .name {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: bold;
       margin: 10px 0;
     }
 
     .status {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: bold;
       margin-bottom: 10px;
     }
+
+    .employee-card {
+      padding-bottom: 15px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .wallet {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 15px;
+      color: #28a745;
+    }
+
+    .meal-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      margin-bottom: 8px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .meal-item:hover {
+      background: #f8f9fa;
+    }
+
+    .meal-info {
+      flex: 1;
+    }
+
+    .meal-name {
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .meal-price {
+      margin-top: 4px;
+      color: #666;
+    }
+
+    .meal-checkbox {
+      width: 22px;
+      height: 22px;
+    }
+
+    .total-section {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #ddd;
+    }
+
+    .total {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .proceed-button {
+      width: 100%;
+      margin-top: 15px;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #28a745;
+      color: white;
+    }
+
+    .proceed-button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+
   </style>
+
 </head>
 
 <body>
 
 <h1>🍱 Free Lunch Scanner</h1>
+
 <p>Scan Employee QR Code</p>
 
 <div id="reader"></div>
 
+
+<!-- RESULT -->
+
 <div id="result" class="info">
+
   📷 Camera is starting...
+
 </div>
 
+
+<!-- MEAL SECTION -->
+
+<div id="mealSection">
+
+  <div class="employee-card">
+
+    <div
+      id="employeeName"
+      class="name">
+    </div>
+
+    <div id="employeeId"></div>
+
+    <div id="department"></div>
+
+    <div class="wallet">
+
+      Wallet:
+      ₱<span id="walletBalance">0.00</span>
+
+    </div>
+
+  </div>
+
+
+  <h3>🍽 Select Meal(s)</h3>
+
+
+  <div id="mealList"></div>
+
+
+  <div class="total-section">
+
+    <div class="total">
+
+      Total:
+      ₱<span id="mealTotal">0.00</span>
+
+    </div>
+
+
+    <button
+      id="proceedButton"
+      class="proceed-button"
+      disabled>
+
+      PROCEED
+
+    </button>
+
+  </div>
+
+</div>
+
+
 <script>
+
 
 const API_URL =
   "https://script.google.com/macros/s/AKfycbw056MlHvMWgKzfm8KWXbhwHGA-qz1MHWsjP1M4wekvHTL64Qfg1PioHsQ601BeBCsr/exec";
 
+
 let scanner = null;
+
 let processing = false;
 
-  function beep(type) {
+let currentEmployee = null;
 
-  const AudioContext =
-    window.AudioContext ||
-    window.webkitAudioContext;
-
-  if (!AudioContext) return;
-
-  const audioContext =
-    new AudioContext();
-
-  const oscillator =
-    audioContext.createOscillator();
-
-  const gain =
-    audioContext.createGain();
-
-  oscillator.connect(gain);
-  gain.connect(audioContext.destination);
-
-  if (type === "success") {
-    oscillator.frequency.value = 1000;
-  } else {
-    oscillator.frequency.value = 400;
-  }
-
-  gain.gain.setValueAtTime(
-    0.3,
-    audioContext.currentTime
-  );
-
-  oscillator.start();
-
-  oscillator.stop(
-    audioContext.currentTime + 0.15
-  );
-}
+let availableMeals = [];
 
 
 // =====================================
@@ -137,7 +263,60 @@ function showResult(message, type) {
     document.getElementById("result");
 
   result.className = type;
+
   result.innerHTML = message;
+
+}
+
+
+// =====================================
+// BEEP
+// =====================================
+
+function beep(type) {
+
+  const AudioContext =
+    window.AudioContext ||
+    window.webkitAudioContext;
+
+  if (!AudioContext) {
+    return;
+  }
+
+  const audioContext =
+    new AudioContext();
+
+  const oscillator =
+    audioContext.createOscillator();
+
+  const gain =
+    audioContext.createGain();
+
+  oscillator.connect(gain);
+
+  gain.connect(
+    audioContext.destination
+  );
+
+
+  oscillator.frequency.value =
+    type === "success"
+      ? 1000
+      : 400;
+
+
+  gain.gain.setValueAtTime(
+    0.3,
+    audioContext.currentTime
+  );
+
+
+  oscillator.start();
+
+  oscillator.stop(
+    audioContext.currentTime + 0.15
+  );
+
 }
 
 
@@ -147,18 +326,9 @@ function showResult(message, type) {
 
 function startScanner() {
 
-  if (typeof Html5Qrcode === "undefined") {
+  scanner =
+    new Html5Qrcode("reader");
 
-    showResult(
-      "❌ Scanner library failed to load.<br><br>" +
-      "Please check your internet connection.",
-      "error"
-    );
-
-    return;
-  }
-
-  scanner = new Html5Qrcode("reader");
 
   scanner.start(
 
@@ -168,12 +338,15 @@ function startScanner() {
 
     {
       fps: 10,
+
       qrbox: {
         width: 250,
         height: 250
       },
+
       aspectRatio: 1.0
     },
+
 
     function(decodedText) {
 
@@ -181,13 +354,9 @@ function startScanner() {
         return;
       }
 
-      console.log("RAW QR:", decodedText);
 
       let employeeId = "";
 
-      // =====================================
-      // EXTRACT CLAIM FROM QR URL
-      // =====================================
 
       try {
 
@@ -195,27 +364,24 @@ function startScanner() {
           new URL(decodedText);
 
         employeeId =
-          qrUrl.searchParams.get("claim") || "";
+          qrUrl.searchParams.get("claim") ||
+          "";
 
-      } catch (error) {
+      }
 
-        // Also support QR containing only:
-        // FC-00011
+      catch (error) {
 
         employeeId =
           decodedText;
 
       }
 
+
       employeeId =
         String(employeeId)
           .trim()
           .toUpperCase();
 
-      console.log(
-        "EMPLOYEE ID:",
-        employeeId
-      );
 
       if (!employeeId) {
 
@@ -225,9 +391,12 @@ function startScanner() {
         );
 
         return;
+
       }
 
+
       processing = true;
+
 
       showResult(
 
@@ -240,13 +409,15 @@ function startScanner() {
 
       );
 
-      claimEmployee(employeeId);
+
+      getEmployeeData(employeeId);
 
     },
 
+
     function(errorMessage) {
 
-      // Normal scanning errors are ignored.
+      // Ignore normal scanning errors
 
     }
 
@@ -263,11 +434,6 @@ function startScanner() {
 
   .catch(function(error) {
 
-    console.error(
-      "CAMERA ERROR:",
-      error
-    );
-
     showResult(
 
       "❌ CAMERA ERROR<br><br>" +
@@ -283,23 +449,26 @@ function startScanner() {
 
 
 // =====================================
-// CONTACT APPS SCRIPT
+// GET EMPLOYEE DATA USING JSONP
 // =====================================
 
-function claimEmployee(employeeId) {
+function getEmployeeData(employeeId) {
 
   const callbackName =
-    "lunchCallback_" +
+    "employeeCallback_" +
     Date.now();
+
 
   window[callbackName] =
     function(response) {
 
       try {
 
-        handleResult(response);
+        handleEmployeeData(response);
 
-      } finally {
+      }
+
+      finally {
 
         delete window[callbackName];
 
@@ -320,12 +489,14 @@ function claimEmployee(employeeId) {
   const script =
     document.createElement("script");
 
+
   script.id =
     callbackName;
 
+
   script.src =
     API_URL +
-    "?action=claim" +
+    "?action=employeeData" +
     "&employeeId=" +
     encodeURIComponent(employeeId) +
     "&callback=" +
@@ -339,10 +510,7 @@ function claimEmployee(employeeId) {
 
       script.remove();
 
-      handleError({
-        message:
-          "Unable to contact the lunch system."
-      });
+      handleConnectionError();
 
     };
 
@@ -353,63 +521,89 @@ function claimEmployee(employeeId) {
 
 
 // =====================================
-// HANDLE RESULT
+// HANDLE EMPLOYEE DATA
 // =====================================
 
-function handleResult(response) {
+function handleEmployeeData(response) {
 
   console.log(
-    "API RESPONSE:",
+    "EMPLOYEE RESPONSE:",
     response
   );
 
-  if (response.status === "CLAIMED") {
-    beep("success");
+
+  if (
+    response.status === "SUCCESS"
+  ) {
+
+    currentEmployee =
+      response.employee;
+
+
+    availableMeals =
+      response.meals || [];
+
+
+    document.getElementById(
+      "employeeName"
+    ).innerText =
+      response.employee.name;
+
+
+    document.getElementById(
+      "employeeId"
+    ).innerText =
+      response.employee.employeeId;
+
+
+    document.getElementById(
+      "department"
+    ).innerText =
+      response.employee.department;
+
+
+    document.getElementById(
+      "walletBalance"
+    ).innerText =
+      Number(
+        response.wallet.remainingBalance
+      ).toFixed(2);
+
+
+    renderMeals();
+
+
+    document.getElementById(
+      "mealSection"
+    ).style.display =
+      "block";
+
 
     showResult(
-
-      "🟢" +
-      "<div class='status'>LUNCH CLAIMED</div>" +
-
-      "<div class='name'>" +
-      response.name +
-      "</div>" +
-
-      "<div>" +
-      response.employeeId +
-      "</div>" +
-
-      "<div>" +
-      response.time +
-      "</div>",
-
+      "✅ Employee verified. Select meal.",
       "success"
     );
 
+
+    return;
+
   }
 
-  else if (
-    response.status === "ALREADY_CLAIMED"
+
+  document.getElementById(
+    "mealSection"
+  ).style.display =
+    "none";
+
+
+  if (
+    response.status === "NOT_FOUND"
   ) {
+
     beep("error");
 
     showResult(
-
-      "🔴" +
-      "<div class='status'>ALREADY CLAIMED</div>" +
-
-      "<div class='name'>" +
-      response.name +
-      "</div>" +
-
-      "<div>" +
-      response.employeeId +
-      "</div>" +
-
-      "<div>Claimed at " +
-      response.time +
-      "</div>",
-
+      "❌ EMPLOYEE NOT FOUND",
       "error"
     );
 
@@ -419,38 +613,15 @@ function handleResult(response) {
     response.status === "NOT_ELIGIBLE"
   ) {
 
-    showResult(
-
-      "🔴" +
-      "<div class='status'>NOT ELIGIBLE</div>" +
-
-      "<div class='name'>" +
-      response.name +
-      "</div>" +
-
-      "<div>" +
-      response.message +
-      "</div>",
-
-      "error"
-    );
-
-  }
-
-  else if (
-    response.status === "NOT_FOUND"
-  ) {
+    beep("error");
 
     showResult(
 
-      "❌" +
-      "<div class='status'>EMPLOYEE NOT FOUND</div>" +
-
-      "<div>" +
-      response.employeeId +
-      "</div>",
+      "🔴 NOT ELIGIBLE<br><br>" +
+      response.name,
 
       "error"
+
     );
 
   }
@@ -459,31 +630,483 @@ function handleResult(response) {
 
     showResult(
 
-      "⚠️" +
-      "<div class='status'>SYSTEM ERROR</div>" +
+      "⚠️ SYSTEM ERROR<br><br>" +
 
-      "<div>" +
       (
         response.message ||
-        "Unexpected response."
-      ) +
-      "</div>",
+        "Unable to retrieve employee."
+      ),
 
       "error"
+
     );
 
   }
 
-  setTimeout(function() {
 
-    processing = false;
+  resetForNextEmployee();
+
+}
+
+
+// =====================================
+// RENDER MEALS
+// =====================================
+
+function renderMeals() {
+
+  const mealList =
+    document.getElementById(
+      "mealList"
+    );
+
+
+  mealList.innerHTML =
+    "";
+
+
+  if (
+    availableMeals.length === 0
+  ) {
+
+    mealList.innerHTML =
+      "<p>No meals available.</p>";
+
+    return;
+
+  }
+
+
+  availableMeals.forEach(
+    function(meal) {
+
+      const mealItem =
+        document.createElement(
+          "label"
+        );
+
+
+      mealItem.className =
+        "meal-item";
+
+
+      mealItem.innerHTML =
+
+        "<div class='meal-info'>" +
+
+        "<div class='meal-name'>" +
+        meal.name +
+        "</div>" +
+
+        "<div class='meal-price'>" +
+        "₱" +
+        Number(meal.price)
+          .toFixed(2) +
+        "</div>" +
+
+        "</div>" +
+
+        "<input " +
+
+        "type='checkbox' " +
+
+        "class='meal-checkbox' " +
+
+        "data-id='" +
+        meal.mealId +
+        "' " +
+
+        "data-price='" +
+        meal.price +
+        "'>";
+
+
+      mealList.appendChild(
+        mealItem
+      );
+
+    }
+
+  );
+
+
+  const checkboxes =
+    document.querySelectorAll(
+      ".meal-checkbox"
+    );
+
+
+  checkboxes.forEach(
+    function(checkbox) {
+
+      checkbox.addEventListener(
+        "change",
+        updateTotal
+      );
+
+    }
+
+  );
+
+}
+
+
+// =====================================
+// UPDATE TOTAL
+// =====================================
+
+function updateTotal() {
+
+  let total = 0;
+
+  let selectedCount = 0;
+
+
+  document
+    .querySelectorAll(
+      ".meal-checkbox:checked"
+    )
+
+    .forEach(
+      function(checkbox) {
+
+        total +=
+          Number(
+            checkbox.dataset.price
+          );
+
+        selectedCount++;
+
+      }
+
+    );
+
+
+  document.getElementById(
+    "mealTotal"
+  ).innerText =
+    total.toFixed(2);
+
+
+  document.getElementById(
+    "proceedButton"
+  ).disabled =
+    selectedCount === 0;
+
+}
+
+
+// =====================================
+// PROCEED
+// =====================================
+
+document.getElementById(
+  "proceedButton"
+).addEventListener(
+
+  "click",
+
+  function() {
+
+    const selectedMeals = [];
+
+
+    document
+      .querySelectorAll(
+        ".meal-checkbox:checked"
+      )
+
+      .forEach(
+        function(checkbox) {
+
+          const meal =
+            availableMeals.find(
+              function(item) {
+
+                return (
+                  item.mealId ===
+                  checkbox.dataset.id
+                );
+
+              }
+            );
+
+
+          if (meal) {
+
+            selectedMeals.push(
+              meal
+            );
+
+          }
+
+        }
+
+      );
+
+
+    if (
+      selectedMeals.length === 0
+    ) {
+      return;
+    }
+
 
     showResult(
-      "📷 READY — SCAN NEXT EMPLOYEE",
+      "⏳ Processing transaction...",
       "info"
     );
 
-  }, 3000);
+
+    document.getElementById(
+      "proceedButton"
+    ).disabled =
+      true;
+
+
+    processTransaction(
+      currentEmployee.employeeId,
+      selectedMeals
+    );
+
+  }
+
+);
+
+
+// =====================================
+// PROCESS TRANSACTION
+// =====================================
+
+function processTransaction(
+  employeeId,
+  selectedMeals
+) {
+
+  /*
+    Since JSONP only supports GET,
+    we encode the selected meals.
+  */
+
+  const callbackName =
+    "transactionCallback_" +
+    Date.now();
+
+
+  window[callbackName] =
+    function(response) {
+
+      try {
+
+        handleTransactionResult(
+          response
+        );
+
+      }
+
+      finally {
+
+        delete window[callbackName];
+
+        const script =
+          document.getElementById(
+            callbackName
+          );
+
+        if (script) {
+          script.remove();
+        }
+
+      }
+
+    };
+
+
+  const script =
+    document.createElement("script");
+
+
+  script.id =
+    callbackName;
+
+
+  script.src =
+
+    API_URL +
+
+    "?action=transaction" +
+
+    "&employeeId=" +
+
+    encodeURIComponent(
+      employeeId
+    ) +
+
+    "&meals=" +
+
+    encodeURIComponent(
+      JSON.stringify(
+        selectedMeals
+      )
+    ) +
+
+    "&callback=" +
+
+    encodeURIComponent(
+      callbackName
+    );
+
+
+  script.onerror =
+    function() {
+
+      delete window[callbackName];
+
+      script.remove();
+
+      handleConnectionError();
+
+    };
+
+
+  document.body.appendChild(
+    script
+  );
+
+}
+
+
+// =====================================
+// HANDLE TRANSACTION
+// =====================================
+
+function handleTransactionResult(
+  response
+) {
+
+  if (
+    response.status !== "SUCCESS"
+  ) {
+
+    beep("error");
+
+    showResult(
+
+      "⚠️ TRANSACTION ERROR<br><br>" +
+
+      (
+        response.message ||
+        "Unable to process transaction."
+      ),
+
+      "error"
+
+    );
+
+
+    setTimeout(
+      resetForNextEmployee,
+      3000
+    );
+
+    return;
+
+  }
+
+
+  beep("success");
+
+
+  let paymentMessage = "";
+
+
+  if (
+    Number(
+      response.cashRequired
+    ) === 0
+  ) {
+
+    paymentMessage =
+      "💳 Paid using Wallet";
+
+  }
+
+  else {
+
+    paymentMessage =
+
+      "💳 Wallet Used: ₱" +
+
+      Number(
+        response.walletUsed
+      ).toFixed(2) +
+
+      "<br>" +
+
+      "💵 Cash Required: <b>₱" +
+
+      Number(
+        response.cashRequired
+      ).toFixed(2) +
+
+      "</b>";
+
+  }
+
+
+  showResult(
+
+    "🟢" +
+
+    "<div class='status'>" +
+    "TRANSACTION COMPLETE" +
+    "</div>" +
+
+    "<div class='name'>" +
+    response.employee.name +
+    "</div>" +
+
+    "<br>" +
+
+    "<div>Total: ₱" +
+
+    Number(
+      response.totalAmount
+    ).toFixed(2) +
+
+    "</div>" +
+
+    "<br>" +
+
+    "<div>" +
+    paymentMessage +
+    "</div>" +
+
+    "<br>" +
+
+    "<div>Remaining Wallet: <b>₱" +
+
+    Number(
+      response.remainingBalance
+    ).toFixed(2) +
+
+    "</b></div>",
+
+    "success"
+
+  );
+
+
+  document.getElementById(
+    "mealSection"
+  ).style.display =
+    "none";
+
+
+  setTimeout(
+    resetForNextEmployee,
+    4000
+  );
 
 }
 
@@ -492,30 +1115,69 @@ function handleResult(response) {
 // CONNECTION ERROR
 // =====================================
 
-function handleError(error) {
+function handleConnectionError() {
 
   showResult(
 
-    "⚠️" +
-    "<div class='status'>SYSTEM ERROR</div>" +
-
-    "<div>" +
-    error.message +
-    "</div>",
+    "⚠️ SYSTEM ERROR<br><br>" +
+    "Unable to contact the lunch system.",
 
     "error"
+
   );
 
-  setTimeout(function() {
 
-    processing = false;
+  setTimeout(
+    resetForNextEmployee,
+    3000
+  );
 
-    showResult(
-      "📷 READY — SCAN NEXT EMPLOYEE",
-      "info"
-    );
+}
 
-  }, 3000);
+
+// =====================================
+// RESET
+// =====================================
+
+function resetForNextEmployee() {
+
+  currentEmployee = null;
+
+  availableMeals = [];
+
+
+  document.getElementById(
+    "mealSection"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "mealList"
+  ).innerHTML =
+    "";
+
+
+  document.getElementById(
+    "mealTotal"
+  ).innerText =
+    "0.00";
+
+
+  document.getElementById(
+    "proceedButton"
+  ).disabled =
+    true;
+
+
+  processing =
+    false;
+
+
+  showResult(
+    "📷 READY — SCAN NEXT EMPLOYEE",
+    "info"
+  );
 
 }
 
@@ -524,11 +1186,13 @@ function handleError(error) {
 // START
 // =====================================
 
-window.onload = function() {
+window.onload =
+  function() {
 
-  startScanner();
+    startScanner();
 
-};
+  };
+
 
 </script>
 
