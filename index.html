@@ -666,7 +666,63 @@ function handleEmployeeData(
         response.wallet.remainingBalance
       ).toFixed(2);
 
+// =====================================
+// CHECK WALLET BALANCE
+// =====================================
 
+const remainingBalance =
+  Number(
+    response.wallet.remainingBalance
+  ) || 0;
+
+
+// If wallet is fully consumed
+if (remainingBalance <= 0) {
+
+  document.getElementById(
+    "mealSection"
+  ).style.display =
+    "none";
+
+
+  showResult(
+
+    "🔴" +
+
+    "<div class='status'>" +
+    "WALLET FULLY CONSUMED" +
+    "</div>" +
+
+    "<div class='name'>" +
+    response.employee.name +
+    "</div>" +
+
+    "<br>" +
+
+    "<div>" +
+    "Today's lunch wallet has already been used." +
+    "</div>" +
+
+    "<br>" +
+
+    "<div>" +
+    "Remaining Balance: <b>₱0.00</b>" +
+    "</div>",
+
+    "error"
+
+  );
+
+
+  setTimeout(
+    resetForNextEmployee,
+    4000
+  );
+
+
+  return;
+
+}
     // =====================================
     // RENDER MEALS
     // =====================================
