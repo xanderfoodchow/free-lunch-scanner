@@ -2,7 +2,8 @@
 <html>
 <head>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
 
   <title>Free Lunch Scanner</title>
 
@@ -10,6 +11,7 @@
     src="https://unpkg.com/html5-qrcode"
     type="text/javascript">
   </script>
+
 
   <style>
 
@@ -48,7 +50,7 @@
     #result {
       background: white;
       font-size: 20px;
-      min-height: 80px;
+      min-height: 60px;
     }
 
     #mealSection {
@@ -75,7 +77,7 @@
     .name {
       font-size: 24px;
       font-weight: bold;
-      margin: 10px 0;
+      margin: 8px 0;
     }
 
     .status {
@@ -91,10 +93,10 @@
     }
 
     .wallet {
-      font-size: 24px;
+      font-size: 25px;
       font-weight: bold;
-      margin-top: 15px;
       color: #28a745;
+      margin-top: 12px;
     }
 
     .meal-item {
@@ -106,6 +108,7 @@
       border: 1px solid #ddd;
       border-radius: 8px;
       cursor: pointer;
+      box-sizing: border-box;
     }
 
     .meal-item:hover {
@@ -122,8 +125,8 @@
     }
 
     .meal-price {
-      margin-top: 4px;
       color: #666;
+      margin-top: 4px;
     }
 
     .meal-checkbox {
@@ -164,85 +167,109 @@
 
 </head>
 
+
 <body>
 
-<h1>🍱 Free Lunch Scanner</h1>
+  <h1>🍱 Free Lunch Scanner</h1>
 
-<p>Scan Employee QR Code</p>
-
-<div id="reader"></div>
+  <p>Scan Employee QR Code</p>
 
 
-<!-- RESULT -->
-
-<div id="result" class="info">
-
-  📷 Camera is starting...
-
-</div>
+  <div id="reader"></div>
 
 
-<!-- MEAL SECTION -->
+  <div id="result"
+       class="info">
 
-<div id="mealSection">
-
-  <div class="employee-card">
-
-    <div
-      id="employeeName"
-      class="name">
-    </div>
-
-    <div id="employeeId"></div>
-
-    <div id="department"></div>
-
-    <div class="wallet">
-
-      Wallet:
-      ₱<span id="walletBalance">0.00</span>
-
-    </div>
+    📷 Starting camera...
 
   </div>
 
 
-  <h3>🍽 Select Meal(s)</h3>
+  <!-- MEAL SELECTION -->
+
+  <div id="mealSection">
 
 
-  <div id="mealList"></div>
+    <div class="employee-card">
+
+      <div
+        id="employeeName"
+        class="name">
+      </div>
 
 
-  <div class="total-section">
+      <div id="employeeId">
+      </div>
 
-    <div class="total">
 
-      Total:
-      ₱<span id="mealTotal">0.00</span>
+      <div id="department">
+      </div>
+
+
+      <div class="wallet">
+
+        Wallet: ₱<span
+          id="walletBalance">
+
+          0.00
+
+        </span>
+
+      </div>
 
     </div>
 
 
-    <button
-      id="proceedButton"
-      class="proceed-button"
-      disabled>
+    <h3>🍽 Select Meal(s)</h3>
 
-      PROCEED
 
-    </button>
+    <div id="mealList">
+    </div>
+
+
+    <div class="total-section">
+
+      <div class="total">
+
+        Total: ₱<span
+          id="mealTotal">
+
+          0.00
+
+        </span>
+
+      </div>
+
+
+      <button
+        id="proceedButton"
+        class="proceed-button"
+        disabled>
+
+        PROCEED
+
+      </button>
+
+    </div>
 
   </div>
-
-</div>
 
 
 <script>
 
 
+// =====================================
+// API URL
+// =====================================
+
 const API_URL =
   "https://script.google.com/macros/s/AKfycbw056MlHvMWgKzfm8KWXbhwHGA-qz1MHWsjP1M4wekvHTL64Qfg1PioHsQ601BeBCsr/exec";
 
+
+// =====================================
+// VARIABLES
+// =====================================
 
 let scanner = null;
 
@@ -270,51 +297,93 @@ function showResult(message, type) {
 
 
 // =====================================
-// BEEP
+// JSONP REQUEST
 // =====================================
 
-function beep(type) {
+function apiRequest(
+  url,
+  successCallback,
+  errorCallback
+) {
 
-  const AudioContext =
-    window.AudioContext ||
-    window.webkitAudioContext;
-
-  if (!AudioContext) {
-    return;
-  }
-
-  const audioContext =
-    new AudioContext();
-
-  const oscillator =
-    audioContext.createOscillator();
-
-  const gain =
-    audioContext.createGain();
-
-  oscillator.connect(gain);
-
-  gain.connect(
-    audioContext.destination
-  );
+  const callbackName =
+    "lunchCallback_" +
+    Date.now() +
+    "_" +
+    Math.floor(
+      Math.random() * 10000
+    );
 
 
-  oscillator.frequency.value =
-    type === "success"
-      ? 1000
-      : 400;
+  window[callbackName] =
+    function(response) {
+
+      try {
+
+        successCallback(response);
+
+      }
+
+      finally {
+
+        delete window[callbackName];
 
 
-  gain.gain.setValueAtTime(
-    0.3,
-    audioContext.currentTime
-  );
+        const script =
+          document.getElementById(
+            callbackName
+          );
 
 
-  oscillator.start();
+        if (script) {
 
-  oscillator.stop(
-    audioContext.currentTime + 0.15
+          script.remove();
+
+        }
+
+      }
+
+    };
+
+
+  const script =
+    document.createElement("script");
+
+
+  script.id =
+    callbackName;
+
+
+  script.src =
+    url +
+    "&callback=" +
+    encodeURIComponent(
+      callbackName
+    );
+
+
+  script.onerror =
+    function() {
+
+      delete window[callbackName];
+
+      script.remove();
+
+
+      if (errorCallback) {
+
+        errorCallback({
+          message:
+            "Unable to contact the lunch system."
+        });
+
+      }
+
+    };
+
+
+  document.body.appendChild(
+    script
   );
 
 }
@@ -326,48 +395,85 @@ function beep(type) {
 
 function startScanner() {
 
+
+  if (
+    typeof Html5Qrcode ===
+    "undefined"
+  ) {
+
+    showResult(
+      "❌ Scanner library failed to load.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
   scanner =
-    new Html5Qrcode("reader");
+    new Html5Qrcode(
+      "reader"
+    );
 
 
   scanner.start(
 
     {
-      facingMode: "environment"
+      facingMode:
+        "environment"
     },
 
+
     {
+
       fps: 10,
 
       qrbox: {
+
         width: 250,
+
         height: 250
+
       },
 
       aspectRatio: 1.0
+
     },
 
 
     function(decodedText) {
 
+
       if (processing) {
+
         return;
+
       }
 
 
       let employeeId = "";
 
 
+      // =====================================
+      // EXTRACT EMPLOYEE ID
+      // =====================================
+
       try {
 
         const qrUrl =
-          new URL(decodedText);
+          new URL(
+            decodedText
+          );
+
 
         employeeId =
-          qrUrl.searchParams.get("claim") ||
-          "";
+          qrUrl.searchParams.get(
+            "claim"
+          ) || "";
 
       }
+
 
       catch (error) {
 
@@ -395,7 +501,8 @@ function startScanner() {
       }
 
 
-      processing = true;
+      processing =
+        true;
 
 
       showResult(
@@ -410,18 +517,21 @@ function startScanner() {
       );
 
 
-      getEmployeeData(employeeId);
+      getEmployeeData(
+        employeeId
+      );
 
     },
 
 
     function(errorMessage) {
 
-      // Ignore normal scanning errors
+      // Ignore normal scan errors
 
     }
 
   )
+
 
   .then(function() {
 
@@ -431,6 +541,7 @@ function startScanner() {
     );
 
   })
+
 
   .catch(function(error) {
 
@@ -449,73 +560,46 @@ function startScanner() {
 
 
 // =====================================
-// GET EMPLOYEE DATA USING JSONP
+// GET EMPLOYEE DATA
 // =====================================
 
-function getEmployeeData(employeeId) {
-
-  const callbackName =
-    "employeeCallback_" +
-    Date.now();
+function getEmployeeData(
+  employeeId
+) {
 
 
-  window[callbackName] =
-    function(response) {
-
-      try {
-
-        handleEmployeeData(response);
-
-      }
-
-      finally {
-
-        delete window[callbackName];
-
-        const script =
-          document.getElementById(
-            callbackName
-          );
-
-        if (script) {
-          script.remove();
-        }
-
-      }
-
-    };
-
-
-  const script =
-    document.createElement("script");
-
-
-  script.id =
-    callbackName;
-
-
-  script.src =
+  const url =
     API_URL +
     "?action=employeeData" +
     "&employeeId=" +
-    encodeURIComponent(employeeId) +
-    "&callback=" +
-    encodeURIComponent(callbackName);
+    encodeURIComponent(
+      employeeId
+    );
 
 
-  script.onerror =
-    function() {
+  apiRequest(
 
-      delete window[callbackName];
-
-      script.remove();
-
-      handleConnectionError();
-
-    };
+    url,
 
 
-  document.body.appendChild(script);
+    function(response) {
+
+      handleEmployeeData(
+        response
+      );
+
+    },
+
+
+    function(error) {
+
+      handleError(
+        error
+      );
+
+    }
+
+  );
 
 }
 
@@ -524,17 +608,22 @@ function getEmployeeData(employeeId) {
 // HANDLE EMPLOYEE DATA
 // =====================================
 
-function handleEmployeeData(response) {
+function handleEmployeeData(
+  response
+) {
+
 
   console.log(
-    "EMPLOYEE RESPONSE:",
+    "EMPLOYEE DATA:",
     response
   );
 
 
   if (
-    response.status === "SUCCESS"
+    response.status ===
+    "SUCCESS"
   ) {
+
 
     currentEmployee =
       response.employee;
@@ -543,6 +632,10 @@ function handleEmployeeData(response) {
     availableMeals =
       response.meals || [];
 
+
+    // =====================================
+    // EMPLOYEE INFO
+    // =====================================
 
     document.getElementById(
       "employeeName"
@@ -562,6 +655,10 @@ function handleEmployeeData(response) {
       response.employee.department;
 
 
+    // =====================================
+    // WALLET
+    // =====================================
+
     document.getElementById(
       "walletBalance"
     ).innerText =
@@ -569,6 +666,10 @@ function handleEmployeeData(response) {
         response.wallet.remainingBalance
       ).toFixed(2);
 
+
+    // =====================================
+    // RENDER MEALS
+    // =====================================
 
     renderMeals();
 
@@ -580,71 +681,77 @@ function handleEmployeeData(response) {
 
 
     showResult(
-      "✅ Employee verified. Select meal.",
+
+      "✅ EMPLOYEE VERIFIED<br>" +
+      "Select meal(s).",
+
       "success"
-    );
-
-
-    return;
-
-  }
-
-
-  document.getElementById(
-    "mealSection"
-  ).style.display =
-    "none";
-
-
-  if (
-    response.status === "NOT_FOUND"
-  ) {
-
-    beep("error");
-
-    showResult(
-      "❌ EMPLOYEE NOT FOUND",
-      "error"
-    );
-
-  }
-
-  else if (
-    response.status === "NOT_ELIGIBLE"
-  ) {
-
-    beep("error");
-
-    showResult(
-
-      "🔴 NOT ELIGIBLE<br><br>" +
-      response.name,
-
-      "error"
 
     );
 
+
   }
+
 
   else {
 
-    showResult(
 
-      "⚠️ SYSTEM ERROR<br><br>" +
+    document.getElementById(
+      "mealSection"
+    ).style.display =
+      "none";
 
-      (
-        response.message ||
-        "Unable to retrieve employee."
-      ),
 
-      "error"
+    if (
+      response.status ===
+      "NOT_FOUND"
+    ) {
 
-    );
+      showResult(
+        "❌ EMPLOYEE NOT FOUND",
+        "error"
+      );
+
+    }
+
+
+    else if (
+      response.status ===
+      "NOT_ELIGIBLE"
+    ) {
+
+      showResult(
+
+        "🔴 NOT ELIGIBLE<br><br>" +
+        response.name,
+
+        "error"
+
+      );
+
+    }
+
+
+    else {
+
+      showResult(
+
+        "⚠️ SYSTEM ERROR<br><br>" +
+        (
+          response.message ||
+          "Unable to retrieve employee."
+        ),
+
+        "error"
+
+      );
+
+    }
+
+
+    resetForNextEmployee();
 
   }
-
-
-  resetForNextEmployee();
 
 }
 
@@ -654,6 +761,7 @@ function handleEmployeeData(response) {
 // =====================================
 
 function renderMeals() {
+
 
   const mealList =
     document.getElementById(
@@ -680,6 +788,7 @@ function renderMeals() {
   availableMeals.forEach(
     function(meal) {
 
+
       const mealItem =
         document.createElement(
           "label"
@@ -699,12 +808,17 @@ function renderMeals() {
         "</div>" +
 
         "<div class='meal-price'>" +
+
         "₱" +
-        Number(meal.price)
-          .toFixed(2) +
+
+        Number(
+          meal.price
+        ).toFixed(2) +
+
         "</div>" +
 
         "</div>" +
+
 
         "<input " +
 
@@ -713,11 +827,15 @@ function renderMeals() {
         "class='meal-checkbox' " +
 
         "data-id='" +
+
         meal.mealId +
+
         "' " +
 
         "data-price='" +
+
         meal.price +
+
         "'>";
 
 
@@ -739,9 +857,13 @@ function renderMeals() {
   checkboxes.forEach(
     function(checkbox) {
 
+
       checkbox.addEventListener(
+
         "change",
+
         updateTotal
+
       );
 
     }
@@ -757,6 +879,7 @@ function renderMeals() {
 
 function updateTotal() {
 
+
   let total = 0;
 
   let selectedCount = 0;
@@ -766,19 +889,19 @@ function updateTotal() {
     .querySelectorAll(
       ".meal-checkbox:checked"
     )
-
     .forEach(
       function(checkbox) {
+
 
         total +=
           Number(
             checkbox.dataset.price
           );
 
+
         selectedCount++;
 
       }
-
     );
 
 
@@ -797,7 +920,7 @@ function updateTotal() {
 
 
 // =====================================
-// PROCEED
+// PROCEED BUTTON
 // =====================================
 
 document.getElementById(
@@ -808,6 +931,14 @@ document.getElementById(
 
   function() {
 
+
+    if (!currentEmployee) {
+
+      return;
+
+    }
+
+
     const selectedMeals = [];
 
 
@@ -815,13 +946,14 @@ document.getElementById(
       .querySelectorAll(
         ".meal-checkbox:checked"
       )
-
       .forEach(
         function(checkbox) {
+
 
           const meal =
             availableMeals.find(
               function(item) {
+
 
                 return (
                   item.mealId ===
@@ -841,27 +973,28 @@ document.getElementById(
           }
 
         }
-
       );
 
 
     if (
       selectedMeals.length === 0
     ) {
+
       return;
+
     }
-
-
-    showResult(
-      "⏳ Processing transaction...",
-      "info"
-    );
 
 
     document.getElementById(
       "proceedButton"
     ).disabled =
       true;
+
+
+    showResult(
+      "⏳ Processing transaction...",
+      "info"
+    );
 
 
     processTransaction(
@@ -883,116 +1016,69 @@ function processTransaction(
   selectedMeals
 ) {
 
-  /*
-    Since JSONP only supports GET,
-    we encode the selected meals.
-  */
 
-  const callbackName =
-    "transactionCallback_" +
-    Date.now();
-
-
-  window[callbackName] =
-    function(response) {
-
-      try {
-
-        handleTransactionResult(
-          response
-        );
-
-      }
-
-      finally {
-
-        delete window[callbackName];
-
-        const script =
-          document.getElementById(
-            callbackName
-          );
-
-        if (script) {
-          script.remove();
-        }
-
-      }
-
-    };
-
-
-  const script =
-    document.createElement("script");
-
-
-  script.id =
-    callbackName;
-
-
-  script.src =
-
+  const url =
     API_URL +
-
     "?action=transaction" +
 
     "&employeeId=" +
-
     encodeURIComponent(
       employeeId
     ) +
 
     "&meals=" +
-
     encodeURIComponent(
       JSON.stringify(
         selectedMeals
       )
-    ) +
-
-    "&callback=" +
-
-    encodeURIComponent(
-      callbackName
     );
 
 
-  script.onerror =
-    function() {
+  apiRequest(
 
-      delete window[callbackName];
-
-      script.remove();
-
-      handleConnectionError();
-
-    };
+    url,
 
 
-  document.body.appendChild(
-    script
+    function(response) {
+
+      handleTransactionResult(
+        response
+      );
+
+    },
+
+
+    function(error) {
+
+      handleTransactionError(
+        error
+      );
+
+    }
+
   );
 
 }
 
 
 // =====================================
-// HANDLE TRANSACTION
+// TRANSACTION RESULT
 // =====================================
 
 function handleTransactionResult(
   response
 ) {
 
+
   if (
-    response.status !== "SUCCESS"
+    response.status !==
+    "SUCCESS"
   ) {
 
-    beep("error");
 
     showResult(
 
-      "⚠️ TRANSACTION ERROR<br><br>" +
+      "⚠️ SYSTEM ERROR<br><br>" +
 
       (
         response.message ||
@@ -1014,9 +1100,6 @@ function handleTransactionResult(
   }
 
 
-  beep("success");
-
-
   let paymentMessage = "";
 
 
@@ -1026,12 +1109,16 @@ function handleTransactionResult(
     ) === 0
   ) {
 
+
     paymentMessage =
       "💳 Paid using Wallet";
 
+
   }
 
+
   else {
+
 
     paymentMessage =
 
@@ -1041,7 +1128,9 @@ function handleTransactionResult(
         response.walletUsed
       ).toFixed(2) +
 
-      "<br>" +
+
+      "<br><br>" +
+
 
       "💵 Cash Required: <b>₱" +
 
@@ -1062,13 +1151,20 @@ function handleTransactionResult(
     "TRANSACTION COMPLETE" +
     "</div>" +
 
+
     "<div class='name'>" +
+
     response.employee.name +
+
     "</div>" +
+
 
     "<br>" +
 
-    "<div>Total: ₱" +
+
+    "<div>" +
+
+    "Total: ₱" +
 
     Number(
       response.totalAmount
@@ -1076,21 +1172,30 @@ function handleTransactionResult(
 
     "</div>" +
 
+
     "<br>" +
+
 
     "<div>" +
+
     paymentMessage +
+
     "</div>" +
+
 
     "<br>" +
 
-    "<div>Remaining Wallet: <b>₱" +
+
+    "<div>" +
+
+    "Remaining Wallet: <b>₱" +
 
     Number(
       response.remainingBalance
     ).toFixed(2) +
 
     "</b></div>",
+
 
     "success"
 
@@ -1105,22 +1210,66 @@ function handleTransactionResult(
 
   setTimeout(
     resetForNextEmployee,
-    4000
+    5000
   );
 
 }
 
 
 // =====================================
-// CONNECTION ERROR
+// TRANSACTION ERROR
 // =====================================
 
-function handleConnectionError() {
+function handleTransactionError(
+  error
+) {
+
 
   showResult(
 
     "⚠️ SYSTEM ERROR<br><br>" +
-    "Unable to contact the lunch system.",
+
+    (
+      error.message ||
+      "Unable to process transaction."
+    ),
+
+    "error"
+
+  );
+
+
+  document.getElementById(
+    "proceedButton"
+  ).disabled =
+    false;
+
+}
+
+
+// =====================================
+// GENERAL ERROR
+// =====================================
+
+function handleError(
+  error
+) {
+
+
+  document.getElementById(
+    "mealSection"
+  ).style.display =
+    "none";
+
+
+  showResult(
+
+    "⚠️ SYSTEM ERROR<br><br>" +
+
+    (
+      error.message ||
+      "Unable to retrieve employee."
+    ),
 
     "error"
 
@@ -1141,9 +1290,13 @@ function handleConnectionError() {
 
 function resetForNextEmployee() {
 
-  currentEmployee = null;
 
-  availableMeals = [];
+  currentEmployee =
+    null;
+
+
+  availableMeals =
+    [];
 
 
   document.getElementById(
@@ -1175,8 +1328,11 @@ function resetForNextEmployee() {
 
 
   showResult(
+
     "📷 READY — SCAN NEXT EMPLOYEE",
+
     "info"
+
   );
 
 }
