@@ -163,6 +163,130 @@
       cursor: not-allowed;
     }
 
+
+    /* =====================================
+   CONFIRMATION MODAL
+===================================== */
+
+.modal {
+
+  display: none;
+
+  position: fixed;
+
+  z-index: 9999;
+
+  left: 0;
+  top: 0;
+
+  width: 100%;
+  height: 100%;
+
+  background:
+    rgba(0, 0, 0, 0.5);
+
+  padding: 15px;
+
+  box-sizing: border-box;
+
+  overflow-y: auto;
+
+}
+
+
+.modal-content {
+
+  background: white;
+
+  max-width: 450px;
+
+  margin: 50px auto;
+
+  padding: 25px;
+
+  border-radius: 15px;
+
+  text-align: left;
+
+  box-sizing: border-box;
+
+}
+
+
+.confirmation-row {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  padding: 8px 0;
+
+  font-size: 17px;
+
+}
+
+
+.cash-row {
+
+  font-size: 20px;
+
+  margin-top: 5px;
+
+}
+
+
+.confirmation-buttons {
+
+  display: flex;
+
+  gap: 10px;
+
+  margin-top: 25px;
+
+}
+
+
+.cancel-button,
+.confirm-button {
+
+  flex: 1;
+
+  padding: 15px;
+
+  border: none;
+
+  border-radius: 8px;
+
+  font-size: 16px;
+
+  font-weight: bold;
+
+  cursor: pointer;
+
+}
+
+
+.cancel-button {
+
+  background: #ddd;
+
+}
+
+
+.confirm-button {
+
+  background: #28a745;
+
+  color: white;
+
+}
+
+
+#confirmationMeals {
+
+  line-height: 1.8;
+
+}
   </style>
 
 </head>
@@ -255,7 +379,79 @@
 
   </div>
 
+<!-- =====================================
+     ORDER CONFIRMATION MODAL
+===================================== -->
 
+<div id="confirmationModal" class="modal">
+
+  <div class="modal-content">
+
+    <h2>🧾 Confirm Order</h2>
+
+    <div id="confirmationEmployee"></div>
+
+    <hr>
+
+    <div id="confirmationMeals"></div>
+
+    <hr>
+
+    <div class="confirmation-row">
+      <span>Total:</span>
+      <strong id="confirmationTotal">
+        ₱0.00
+      </strong>
+    </div>
+
+    <div class="confirmation-row">
+      <span>Wallet Balance:</span>
+      <strong id="confirmationWallet">
+        ₱0.00
+      </strong>
+    </div>
+
+    <div class="confirmation-row">
+      <span>Wallet Used:</span>
+      <strong id="confirmationWalletUsed">
+        ₱0.00
+      </strong>
+    </div>
+
+    <div
+      id="confirmationCashRow"
+      class="confirmation-row cash-row"
+    >
+      <span>Cash Required:</span>
+
+      <strong id="confirmationCash">
+        ₱0.00
+      </strong>
+    </div>
+
+
+    <div class="confirmation-buttons">
+
+      <button
+        id="cancelConfirmButton"
+        class="cancel-button"
+      >
+        CANCEL
+      </button>
+
+      <button
+        id="confirmButton"
+        class="confirm-button"
+      >
+        CONFIRM ORDER
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+  
 <script>
 
 
@@ -967,16 +1163,9 @@ function updateTotal() {
     total.toFixed(2);
 
 
-  document.getElementById(
-    "proceedButton"
-  ).disabled =
-    selectedCount === 0;
-
-}
-
-
-// =====================================
+  // =====================================
 // PROCEED BUTTON
+// SHOW CONFIRMATION
 // =====================================
 
 document.getElementById(
@@ -987,11 +1176,8 @@ document.getElementById(
 
   function() {
 
-
     if (!currentEmployee) {
-
       return;
-
     }
 
 
@@ -1005,11 +1191,9 @@ document.getElementById(
       .forEach(
         function(checkbox) {
 
-
           const meal =
             availableMeals.find(
               function(item) {
-
 
                 return (
                   item.mealId ===
@@ -1041,27 +1225,162 @@ document.getElementById(
     }
 
 
+    // =====================================
+    // CALCULATE TOTAL
+    // =====================================
+
+    let totalAmount = 0;
+
+
+    selectedMeals.forEach(
+      function(meal) {
+
+        totalAmount +=
+          Number(meal.price) || 0;
+
+      }
+    );
+
+
+    // =====================================
+    // GET WALLET BALANCE
+    // =====================================
+
+    const walletBalance =
+      Number(
+        document.getElementById(
+          "walletBalance"
+        ).innerText
+      ) || 0;
+
+
+    const walletUsed =
+      Math.min(
+        walletBalance,
+        totalAmount
+      );
+
+
+    const cashRequired =
+      Math.max(
+        totalAmount - walletUsed,
+        0
+      );
+
+
+    // =====================================
+    // SHOW EMPLOYEE
+    // =====================================
+
     document.getElementById(
-      "proceedButton"
-    ).disabled =
-      true;
+      "confirmationEmployee"
+    ).innerHTML =
+
+      "<strong>" +
+      currentEmployee.name +
+      "</strong><br>" +
+
+      currentEmployee.employeeId;
 
 
-    showResult(
-      "⏳ Processing transaction...",
-      "info"
+    // =====================================
+    // SHOW SELECTED MEALS
+    // =====================================
+
+    let mealsHtml = "";
+
+
+    selectedMeals.forEach(
+      function(meal) {
+
+        mealsHtml +=
+
+          "<div class='confirmation-row'>" +
+
+          "<span>" +
+          meal.name +
+          "</span>" +
+
+          "<strong>₱" +
+          Number(
+            meal.price
+          ).toFixed(2) +
+          "</strong>" +
+
+          "</div>";
+
+      }
     );
 
 
-    processTransaction(
-      currentEmployee.employeeId,
-      selectedMeals
-    );
+    document.getElementById(
+      "confirmationMeals"
+    ).innerHTML =
+      mealsHtml;
+
+
+    // =====================================
+    // SHOW PAYMENT SUMMARY
+    // =====================================
+
+    document.getElementById(
+      "confirmationTotal"
+    ).innerText =
+      "₱" +
+      totalAmount.toFixed(2);
+
+
+    document.getElementById(
+      "confirmationWallet"
+    ).innerText =
+      "₱" +
+      walletBalance.toFixed(2);
+
+
+    document.getElementById(
+      "confirmationWalletUsed"
+    ).innerText =
+      "₱" +
+      walletUsed.toFixed(2);
+
+
+    document.getElementById(
+      "confirmationCash"
+    ).innerText =
+      "₱" +
+      cashRequired.toFixed(2);
+
+
+    // =====================================
+    // SHOW / HIDE CASH REQUIRED
+    // =====================================
+
+    document.getElementById(
+      "confirmationCashRow"
+    ).style.display =
+
+      cashRequired > 0
+        ? "flex"
+        : "none";
+
+
+    // Save selected meals temporarily
+    window.pendingMeals =
+      selectedMeals;
+
+
+    // =====================================
+    // SHOW MODAL
+    // =====================================
+
+    document.getElementById(
+      "confirmationModal"
+    ).style.display =
+      "block";
 
   }
 
 );
-
 
 // =====================================
 // PROCESS TRANSACTION
