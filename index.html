@@ -580,6 +580,80 @@ let mealQuantities = {};
 
 let pendingMeals = [];
 
+    // =====================================
+// QR SCAN BEEP SOUND
+// =====================================
+
+let audioContext = null;
+
+function playScanBeep() {
+
+  try {
+
+    if (!audioContext) {
+
+      const AudioContext =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+      audioContext =
+        new AudioContext();
+
+    }
+
+    if (
+      audioContext.state === "suspended"
+    ) {
+
+      audioContext.resume();
+
+    }
+
+    const oscillator =
+      audioContext.createOscillator();
+
+    const gainNode =
+      audioContext.createGain();
+
+    oscillator.type = "sine";
+
+    oscillator.frequency.setValueAtTime(
+      1000,
+      audioContext.currentTime
+    );
+
+    gainNode.gain.setValueAtTime(
+      0.25,
+      audioContext.currentTime
+    );
+
+    oscillator.connect(
+      gainNode
+    );
+
+    gainNode.connect(
+      audioContext.destination
+    );
+
+    oscillator.start();
+
+    oscillator.stop(
+      audioContext.currentTime + 0.15
+    );
+
+  }
+
+  catch (error) {
+
+    console.log(
+      "Beep sound error:",
+      error
+    );
+
+  }
+
+}
+
 
 // =====================================
 // SHOW RESULT
@@ -801,8 +875,10 @@ function startScanner() {
 
       processing = true;
 
+// 🔊 BEEP — QR successfully detected
+playScanBeep();
 
-      showResult(
+showResult(
 
         "⏳ Checking employee...<br><br>" +
         "<b>" +
