@@ -553,8 +553,8 @@
 
 
 
-  <script>
-
+  ```html
+<script>
 
 // =====================================
 // API URL
@@ -580,13 +580,19 @@ let mealQuantities = {};
 
 let pendingMeals = [];
 
-    // =====================================
-// QR SCAN BEEP SOUND
+
+// =====================================
+// SOUND SYSTEM
 // =====================================
 
 let audioContext = null;
 
-function playScanBeep() {
+
+// -------------------------------------
+// INITIALIZE AUDIO
+// -------------------------------------
+
+function initializeAudio() {
 
   try {
 
@@ -595,6 +601,16 @@ function playScanBeep() {
       const AudioContext =
         window.AudioContext ||
         window.webkitAudioContext;
+
+      if (!AudioContext) {
+
+        console.log(
+          "Web Audio API is not supported."
+        );
+
+        return null;
+
+      }
 
       audioContext =
         new AudioContext();
@@ -609,36 +625,101 @@ function playScanBeep() {
 
     }
 
+    return audioContext;
+
+  }
+
+  catch (error) {
+
+    console.log(
+      "Audio initialization error:",
+      error
+    );
+
+    return null;
+
+  }
+
+}
+
+
+// -------------------------------------
+// PLAY TONE
+// -------------------------------------
+
+function playTone(
+  frequency,
+  duration,
+  volume,
+  type = "sine",
+  delay = 0
+) {
+
+  const ctx =
+    initializeAudio();
+
+  if (!ctx) {
+
+    return;
+
+  }
+
+  try {
+
+    const startTime =
+      ctx.currentTime + delay;
+
     const oscillator =
-      audioContext.createOscillator();
+      ctx.createOscillator();
 
     const gainNode =
-      audioContext.createGain();
+      ctx.createGain();
 
-    oscillator.type = "sine";
+
+    oscillator.type =
+      type;
+
 
     oscillator.frequency.setValueAtTime(
-      1000,
-      audioContext.currentTime
+      frequency,
+      startTime
     );
 
+
     gainNode.gain.setValueAtTime(
-      0.25,
-      audioContext.currentTime
+      0.001,
+      startTime
     );
+
+
+    gainNode.gain.exponentialRampToValueAtTime(
+      volume,
+      startTime + 0.01
+    );
+
+
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.001,
+      startTime + duration
+    );
+
 
     oscillator.connect(
       gainNode
     );
 
     gainNode.connect(
-      audioContext.destination
+      ctx.destination
     );
 
-    oscillator.start();
+
+    oscillator.start(
+      startTime
+    );
+
 
     oscillator.stop(
-      audioContext.currentTime + 0.15
+      startTime + duration + 0.02
     );
 
   }
@@ -646,7 +727,7 @@ function playScanBeep() {
   catch (error) {
 
     console.log(
-      "Beep sound error:",
+      "Tone error:",
       error
     );
 
@@ -656,17 +737,123 @@ function playScanBeep() {
 
 
 // =====================================
+// 🔊 QR SCANNED BEEP
+// =====================================
+
+function playScanBeep() {
+
+  playTone(
+    1000,
+    0.12,
+    0.25,
+    "sine"
+  );
+
+}
+
+
+// =====================================
+// ✅ SUCCESS SOUND
+// =====================================
+
+function playSuccessSound() {
+
+  playTone(
+    800,
+    0.12,
+    0.25,
+    "sine",
+    0
+  );
+
+  playTone(
+    1200,
+    0.18,
+    0.30,
+    "sine",
+    0.13
+  );
+
+}
+
+
+// =====================================
+// ❌ ERROR SOUND
+// =====================================
+
+function playErrorSound() {
+
+  playTone(
+    500,
+    0.18,
+    0.30,
+    "square",
+    0
+  );
+
+  playTone(
+    350,
+    0.25,
+    0.30,
+    "square",
+    0.20
+  );
+
+}
+
+
+// =====================================
+// 🚫 WARNING SOUND
+// =====================================
+
+function playWarningSound() {
+
+  playTone(
+    650,
+    0.18,
+    0.30,
+    "triangle",
+    0
+  );
+
+  playTone(
+    650,
+    0.18,
+    0.30,
+    "triangle",
+    0.24
+  );
+
+  playTone(
+    400,
+    0.30,
+    0.30,
+    "triangle",
+    0.48
+  );
+
+}
+
+
+// =====================================
 // SHOW RESULT
 // =====================================
 
-function showResult(message, type) {
+function showResult(
+  message,
+  type
+) {
 
   const result =
-    document.getElementById("result");
+    document.getElementById(
+      "result"
+    );
 
-  result.className = type;
+  result.className =
+    type;
 
-  result.innerHTML = message;
+  result.innerHTML =
+    message;
 
 }
 
@@ -695,13 +882,17 @@ function apiRequest(
 
       try {
 
-        successCallback(response);
+        successCallback(
+          response
+        );
 
       }
 
       finally {
 
-        delete window[callbackName];
+        delete window[
+          callbackName
+        ];
 
 
         const script =
@@ -722,7 +913,9 @@ function apiRequest(
 
 
   const script =
-    document.createElement("script");
+    document.createElement(
+      "script"
+    );
 
 
   script.id =
@@ -740,7 +933,9 @@ function apiRequest(
   script.onerror =
     function() {
 
-      delete window[callbackName];
+      delete window[
+        callbackName
+      ];
 
       script.remove();
 
@@ -777,6 +972,8 @@ function startScanner() {
     "undefined"
   ) {
 
+    playErrorSound();
+
     showResult(
       "❌ Scanner library failed to load.",
       "error"
@@ -796,10 +993,8 @@ function startScanner() {
   scanner.start(
 
     {
-
       facingMode:
         "environment"
-
     },
 
 
@@ -810,6 +1005,7 @@ function startScanner() {
       qrbox: {
 
         width: 250,
+
         height: 250
 
       },
@@ -856,16 +1052,27 @@ function startScanner() {
 
 
       employeeId =
-        String(employeeId)
-          .trim()
-          .toUpperCase();
+        String(
+          employeeId
+        )
+        .trim()
+        .toUpperCase();
 
+
+      // =====================================
+      // INVALID QR
+      // =====================================
 
       if (!employeeId) {
 
+        playErrorSound();
+
         showResult(
+
           "❌ INVALID EMPLOYEE QR",
+
           "error"
+
         );
 
         return;
@@ -873,16 +1080,26 @@ function startScanner() {
       }
 
 
-      processing = true;
+      // =====================================
+      // QR SUCCESSFULLY SCANNED
+      // =====================================
 
-// 🔊 BEEP — QR successfully detected
-playScanBeep();
+      processing =
+        true;
 
-showResult(
+
+      // 🔊 BEEP
+      playScanBeep();
+
+
+      showResult(
 
         "⏳ Checking employee...<br><br>" +
+
         "<b>" +
+
         employeeId +
+
         "</b>",
 
         "info"
@@ -909,8 +1126,11 @@ showResult(
   .then(function() {
 
     showResult(
-      "📷 READY — SCAN EMPLOYEE QR",
+
+      "📷 READY — SCAN NEXT EMPLOYEE",
+
       "info"
+
     );
 
   })
@@ -918,11 +1138,18 @@ showResult(
 
   .catch(function(error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
+
+
+    playErrorSound();
+
 
     showResult(
 
       "❌ CAMERA ERROR<br><br>" +
+
       error,
 
       "error"
@@ -992,10 +1219,17 @@ function handleEmployeeData(
   );
 
 
+  // =====================================
+  // EMPLOYEE NOT FOUND
+  // =====================================
+
   if (
     response.status !==
     "SUCCESS"
   ) {
+
+    playErrorSound();
+
 
     showResult(
 
@@ -1067,7 +1301,7 @@ function handleEmployeeData(
 
 
   // =====================================
-  // WALLET FULLY CONSUMED
+  // 🚫 WALLET FULLY CONSUMED
   // =====================================
 
   if (
@@ -1080,28 +1314,42 @@ function handleEmployeeData(
       "none";
 
 
+    // 🚫 WARNING SOUND
+    playWarningSound();
+
+
     showResult(
 
       "🔴" +
 
       "<div class='status'>" +
+
       "WALLET FULLY CONSUMED" +
+
       "</div>" +
 
       "<div class='name'>" +
+
       currentEmployee.name +
+
       "</div>" +
 
       "<br>" +
 
       "<div>" +
+
       "Today's lunch wallet has already been used." +
+
       "</div>" +
 
       "<br>" +
 
       "<div>" +
-      "Remaining Balance: <b>₱0.00</b>" +
+
+      "Remaining Balance: " +
+
+      "<b>₱0.00</b>" +
+
       "</div>",
 
       "error"
@@ -1133,9 +1381,17 @@ function handleEmployeeData(
     "block";
 
 
+  // =====================================
+  // ✅ EMPLOYEE VERIFIED
+  // =====================================
+
+  playSuccessSound();
+
+
   showResult(
 
     "✅ EMPLOYEE VERIFIED<br>" +
+
     "Select meal(s).",
 
     "success"
@@ -1190,7 +1446,6 @@ function renderMeals() {
 
           "</div>" +
 
-
           "<div class='meal-price'>" +
 
             "₱" +
@@ -1203,9 +1458,7 @@ function renderMeals() {
 
         "</div>" +
 
-
         "<div class='quantity-control'>" +
-
 
           "<button " +
 
@@ -1221,7 +1474,6 @@ function renderMeals() {
 
           "</button>" +
 
-
           "<div " +
 
             "class='quantity' " +
@@ -1236,7 +1488,6 @@ function renderMeals() {
 
           "</div>" +
 
-
           "<button " +
 
             "class='quantity-button increase-button' " +
@@ -1250,7 +1501,6 @@ function renderMeals() {
             "+" +
 
           "</button>" +
-
 
         "</div>";
 
@@ -1624,7 +1874,6 @@ document.getElementById(
 
             "</span>" +
 
-
             "<strong>" +
 
               "₱" +
@@ -1753,7 +2002,6 @@ document.getElementById(
 
   function() {
 
-
     if (
       !currentEmployee ||
       pendingMeals.length === 0
@@ -1804,13 +2052,11 @@ function processTransaction(
 
     "?action=transaction" +
 
-
     "&employeeId=" +
 
     encodeURIComponent(
       employeeId
     ) +
-
 
     "&meals=" +
 
@@ -1858,17 +2104,23 @@ function handleTransactionResult(
   response
 ) {
 
-
   document.getElementById(
     "confirmationModal"
   ).style.display =
     "none";
 
 
+  // =====================================
+  // TRANSACTION ERROR
+  // =====================================
+
   if (
     response.status !==
     "SUCCESS"
   ) {
+
+    playErrorSound();
+
 
     showResult(
 
@@ -1889,10 +2141,16 @@ function handleTransactionResult(
       3000
     );
 
-
     return;
 
   }
+
+
+  // =====================================
+  // SUCCESSFUL TRANSACTION
+  // =====================================
+
+  playSuccessSound();
 
 
   let paymentMessage = "";
@@ -1919,9 +2177,7 @@ function handleTransactionResult(
         response.walletUsed
       ).toFixed(2) +
 
-
       "<br><br>" +
-
 
       "💵 Cash Required: <b>₱" +
 
@@ -1944,16 +2200,13 @@ function handleTransactionResult(
 
     "</div>" +
 
-
     "<div class='name'>" +
 
       response.employee.name +
 
     "</div>" +
 
-
     "<br>" +
-
 
     "<div>" +
 
@@ -1965,9 +2218,7 @@ function handleTransactionResult(
 
     "</div>" +
 
-
     "<br>" +
-
 
     "<div>" +
 
@@ -1975,9 +2226,7 @@ function handleTransactionResult(
 
     "</div>" +
 
-
     "<br>" +
-
 
     "<div>" +
 
@@ -1990,7 +2239,6 @@ function handleTransactionResult(
       "</b>" +
 
     "</div>",
-
 
     "success"
 
@@ -2023,6 +2271,9 @@ function handleTransactionError(
     "confirmationModal"
   ).style.display =
     "none";
+
+
+  playErrorSound();
 
 
   showResult(
@@ -2065,6 +2316,9 @@ function handleError(
     "mealSection"
   ).style.display =
     "none";
+
+
+  playErrorSound();
 
 
   showResult(
@@ -2179,8 +2433,8 @@ window.onload =
 
   };
 
+</script>
 
-  </script>
 
 </body>
 </html>
